@@ -1,0 +1,793 @@
+' 
+'   _clkfreq = 160_000_000
+con
+	_clkfreq = 160000000
+'   rx_pin = 63
+	rx_pin = 63
+'   tx_pin = 62
+	tx_pin = 62
+' 
+' 
+' 
+' 
+' 
+' 
+'   baud = 230400
+	baud = 230400
+dat
+	nop
+	cogid	pa
+	coginit	pa,##$400
+	orgh	$10
+	long	0	'reserved
+	long	0 ' clock frequency: will default to 160000000
+	long	0 ' clock mode: will default to $10007fb
+	orgh	$400
+	org	0
+entry
+	cmp	ptra, #0 wz
+ if_ne	jmp	#spininit
+	mov	ptra, ptr_stackspace_
+	rdlong	pa, #20 wz
+ if_ne	jmp	#skip_clock_set_
+	hubset	#0
+	hubset	##16779256
+	waitx	##200000
+	mov	pa, ##16779259
+	hubset	pa
+	wrlong	pa, #24
+	wrlong	##160000000, #20
+	jmp	#skip_clock_set_
+	orgf	32
+skip_clock_set_
+	locknew	__lockreg
+	wrlong	__lockreg, ptr___lockreg_
+	call	#_hello
+cogexit
+	waitx	##160000
+	cogid	arg01
+	cogstop	arg01
+spininit
+	rdlong	objptr, ptra
+	add	ptra, #4
+	rdlong	result1, ptra
+	add	ptra, #4
+	rdlong	arg01, ptra
+	add	ptra, #4
+	rdlong	arg02, ptra
+	add	ptra, #4
+	rdlong	arg03, ptra
+	add	ptra, #4
+	rdlong	arg04, ptra
+	sub	ptra, #16
+	call	result1
+	jmp	#cogexit
+FCACHE_LOAD_
+    pop	fcache_tmpb_
+    add	fcache_tmpb_, pa
+    push	fcache_tmpb_
+    sub	fcache_tmpb_, pa
+    shr	pa, #2
+    mov	fcache_tmpa_, pa
+    add	fcache_tmpa_, #$100
+    wrlut ret_instr_, fcache_tmpa_
+    sub	pa, #1
+    setq2	pa
+    rdlong	$100-0, fcache_tmpb_
+    jmp	#\$300 ' jmp to cache
+ret_instr_
+    ret
+fcache_tmpa_
+    long 0
+fcache_tmpb_
+    long 0
+COUNT_
+    long 0
+RETADDR_
+    long 0
+fp
+    long 0
+gosub_
+    mov  COUNT_, #0
+    mov  pa, arg01
+    pop  RETADDR_
+    jmp  #pushregs_done_
+pushregs_
+    pop  pa
+    pop  RETADDR_
+    tjz  COUNT_, #pushregs_done_
+    sub  COUNT_, #1
+    setq COUNT_
+    wrlong local01, ptra
+    add  COUNT_, #1
+pushregs_done_
+    shl  COUNT_, #2
+    add  ptra, COUNT_
+    shr  COUNT_, #2
+    setq #2 ' push 3 registers starting at COUNT_
+    wrlong COUNT_, ptra
+    add    ptra, #12
+    mov    fp, ptra
+    jmp  pa
+ popregs_
+    pop    pa
+    sub    ptra, #12
+    setq   #2
+    rdlong COUNT_, ptra
+    tjz    COUNT_, #popregs__ret
+    shl    COUNT_, #2
+    sub    ptra, COUNT_
+    shr    COUNT_, #2
+    sub    COUNT_, #1
+    setq   COUNT_
+    rdlong local01, ptra
+popregs__ret
+    push   RETADDR_
+    jmp    pa
+
+unsdivide_
+       setq    #0
+       qdiv    muldiva_, muldivb_
+       getqx   muldivb_
+ _ret_ getqy   muldiva_
+
+divide_
+       abs     muldiva_,muldiva_     wc       'abs(x)
+       muxc    itmp2_,#%11                    'store sign of x
+       abs     muldivb_,muldivb_     wcz      'abs(y)
+ if_c  xor     itmp2_,#%10                    'store sign of y
+ if_z  ret
+       call    #unsdivide_
+       test    itmp2_,#1        wc       'restore sign, remainder
+       negc    muldiva_,muldiva_ 
+       test    itmp2_,#%10      wc       'restore sign, division result
+ _ret_ negc    muldivb_,muldivb_
+
+__lockreg
+	long	0
+itmp1_
+	long	0
+itmp2_
+	long	0
+objptr
+	long	@objmem
+ptr___lockreg_
+	long	@__lockreg
+ptr_stackspace_
+	long	@stackspace
+result1
+	long	0
+COG_BSS_START
+	fit	480
+	orgh
+hubentry
+
+' 
+' 
+' 
+' 
+' PUB hello
+_hello
+	mov	COUNT_, #1
+	call	#pushregs_
+'   ser.start(rx_pin, tx_pin, 0, baud)
+	mov	arg01, #63
+	mov	arg02, #62
+	mov	arg03, #0
+	mov	arg04, ##230400
+	call	#_SmartSerial_start
+'   repeat 10
+	mov	local01, #10
+LR__0001
+'     ser.printf("Hello, world!\n")
+	mov	arg01, ##@LR__0032
+	mov	arg02, #0
+	mov	arg03, #0
+	mov	arg04, #0
+	mov	arg05, #0
+	mov	arg06, #0
+	mov	arg07, #0
+	call	#_SmartSerial_printf
+	djnz	local01, #LR__0001
+	mov	ptra, fp
+	call	#popregs_
+_hello_ret
+	ret
+
+' 
+' '' There are two ways we might call start():
+' '' start(rxpin, txpin, mode, baudrate) - FullDuplexSerial way
+' '' start(baud)                         - PST way
+' ''
+' '' fastspin can handle this by giving default parameter values;
+' '' if a "txpin" of -1 is detected, then we assume the second way
+' '' was called
+' ''
+' 
+' pub start(rxpin, txpin=-1, mode=0, baudrate=230400)
+_SmartSerial_start
+	mov	COUNT_, #3
+	call	#pushregs_
+	mov	local01, arg01
+	mov	local02, arg02
+	mov	local03, arg04
+'   if txpin == -1
+	cmp	local02, ##-1 wz
+'      baudrate := rxpin
+ if_e	mov	local03, local01
+'      rxpin := 63
+ if_e	mov	local01, #63
+'      txpin := 62
+ if_e	mov	local02, #62
+'      
+'   startx(rxpin, txpin, mode, baudrate)
+	mov	arg01, local01
+	mov	arg02, local02
+	mov	arg04, local03
+	call	#_SmartSerial_startx
+	mov	ptra, fp
+	call	#popregs_
+_SmartSerial_start_ret
+	ret
+
+' 
+' pub startx(rxpin, txpin, mode, baudrate) | bitperiod, bit_mode
+_SmartSerial_startx
+	mov	COUNT_, #1
+	call	#pushregs_
+	mov	local01, arg02
+'   bitperiod := (clkfreq / baudrate)
+	rdlong	muldiva_, #20
+	mov	muldivb_, arg04
+	call	#divide_
+' 
+'   ' save parameters in the object
+'   rx_pin := rxpin
+	wrlong	arg01, objptr
+'   tx_pin := txpin
+	add	objptr, #4
+	wrlong	local01, objptr
+	sub	objptr, #4
+' 
+'   ' calculate smartpin mode for 8 bits per character
+'   bit_mode := 7 + (bitperiod << 16)
+	shl	muldivb_, #16
+	mov	arg02, #7
+	add	arg02, muldivb_
+' 
+'   ' set up the transmit pin
+'   pinf(txpin)
+	fltl	local01
+'   wrpin(txpin, _txmode)
+	wrpin	#124, local01
+'   wxpin(txpin, bit_mode)
+	wxpin	arg02, local01
+'   pinl(txpin)	' turn smartpin on by making the pin an output
+	drvl	local01
+' 
+'   ' set up the receive pin
+'   pinf(rxpin)
+	fltl	arg01
+'   wrpin(rxpin, _rxmode)
+	wrpin	#62, arg01
+'   wxpin(rxpin, bit_mode)
+	wxpin	arg02, arg01
+'   pinl(rxpin)  ' turn smartpin on
+	drvl	arg01
+	mov	ptra, fp
+	call	#popregs_
+_SmartSerial_startx_ret
+	ret
+
+' 
+' ' transmit the 8 bit value "val"
+' pub tx(val)
+_SmartSerial_tx
+	mov	COUNT_, #1
+	call	#pushregs_
+'   wypin(tx_pin, val)
+	add	objptr, #4
+	rdlong	local01, objptr
+	sub	objptr, #4
+	mov	arg02, arg01
+	wypin	arg02, local01
+'   txflush
+'   repeat
+LR__0002
+'     z := pinr(tx_pin)
+	add	objptr, #4
+	rdlong	arg01, objptr
+	sub	objptr, #4
+	call	#__system___pinread
+	cmp	result1, #0 wz
+ if_e	jmp	#LR__0002
+	mov	ptra, fp
+	call	#popregs_
+_SmartSerial_tx_ret
+	ret
+
+'   while v == -1
+' 
+' 
+' '' provide the usual str(), dec(), etc. routines
+' #line 1 "/usr/libexec/p2tools/bin/../include/spin/std_text_routines.spinh"
+' 
+' {{
+' }}
+' 
+' '' output a string
+' pub str(s = string("")) | c
+_SmartSerial_str
+	mov	COUNT_, #2
+	call	#pushregs_
+	mov	local01, arg01
+'   repeat while ((c := byte[s++]) <> 0)
+LR__0003
+	rdbyte	local02, local01 wz
+	add	local01, #1
+ if_e	jmp	#LR__0004
+'     tx(c)
+	mov	arg01, local02
+	call	#_SmartSerial_tx
+	jmp	#LR__0003
+LR__0004
+	mov	ptra, fp
+	call	#popregs_
+_SmartSerial_str_ret
+	ret
+
+' 
+' pub num(val, base, signflag, digitsNeeded) | i, digit, r1, q1
+_SmartSerial_num
+	mov	COUNT_, #11
+	call	#pushregs_
+	mov	local01, arg01
+	mov	local02, arg02
+	mov	local03, arg03 wz
+	mov	local04, arg04
+' 
+'   '' if signflag is nonzero, it indicates we should treat
+'   '' val as signed; if it is > 1, it is a character we should
+'   '' print for positive numbers (typically "+")
+'   
+'   if (signflag)
+ if_e	jmp	#LR__0005
+'       if (val < 0)
+	cmps	local01, #0 wcz
+'         signflag := "-"
+ if_b	mov	local03, #45
+' 	val := -val
+ if_b	neg	local01, local01
+LR__0005
+' 	
+'   '' make sure we will not overflow our buffer
+'   if (digitsNeeded > 32)
+	cmps	local04, #32 wcz
+'     digitsNeeded := 32
+ if_a	mov	local04, #32
+' 
+'   '' accumulate the digits
+'   i := 0
+	mov	local05, #0
+	loc	pa,	#(@LR__0012-@LR__0006)
+	call	#FCACHE_LOAD_
+'   repeat
+LR__0006
+'     if (val < 0)
+	cmps	local01, #0 wcz
+ if_ae	jmp	#LR__0007
+'       ' synthesize unsigned division from signed
+'       ' basically shift val right by 2 to make it positive
+'       ' then adjust the result afterwards by the bit we
+'       ' shifted out
+'       r1 := val&1  ' capture low bit
+	mov	local06, local01
+	and	local06, #1
+'       q1 := val>>1 ' divide val by 2
+	shr	local01, #1
+	mov	local07, local01
+'       digit := r1 + 2*(q1 // base)
+	mov	local08, local06
+	mov	muldiva_, local07
+	mov	muldivb_, local02
+	call	#divide_
+	mov	local09, muldiva_
+	shl	local09, #1
+	add	local08, local09
+	mov	local10, local08
+'       val := 2*(q1 / base)
+	mov	local01, muldivb_
+	shl	local01, #1
+'       if (digit => base)
+	cmps	local10, local02 wcz
+'         val++
+ if_ae	add	local01, #1
+' 	digit -= base
+ if_ae	sub	local10, local02
+'     else
+	jmp	#LR__0008
+LR__0007
+'       digit := val // base
+	mov	muldiva_, local01
+	mov	muldivb_, local02
+	call	#divide_
+	mov	local10, muldiva_
+'       val := val / base
+	mov	local01, muldivb_
+LR__0008
+' 
+'     if (digit => 0 and digit =< 9)
+	cmps	local10, #0 wcz
+ if_b	jmp	#LR__0009
+	cmps	local10, #9 wcz
+'        digit += "0"
+ if_be	add	local10, #48
+'     else
+ if_be	jmp	#LR__0010
+LR__0009
+'        digit := (digit - 10) + "A"
+	add	local10, #55
+LR__0010
+'     buf[i++] := digit
+	mov	local09, local05
+	add	objptr, #8
+	add	local09, objptr
+	wrbyte	local10, local09
+'     --digitsNeeded
+	sub	local04, #1
+	cmp	local01, #0 wz
+	sub	objptr, #8
+	add	local05, #1
+ if_ne	jmp	#LR__0011
+	cmps	local04, #0 wcz
+ if_be	jmp	#LR__0013
+LR__0011
+	cmps	local05, #32 wcz
+ if_b	jmp	#LR__0006
+LR__0012
+LR__0013
+'   while (val <> 0 or digitsNeeded > 0) and (i < 32)
+'   if (signflag > 1)
+	cmps	local03, #1 wcz
+ if_be	jmp	#LR__0014
+'     tx(signflag)
+	mov	arg01, local03
+	call	#_SmartSerial_tx
+LR__0014
+'     
+'   '' now print the digits in reverse order
+'   repeat while (i > 0)
+LR__0015
+	cmps	local05, #0 wcz
+ if_be	jmp	#LR__0016
+'     tx(buf[--i])
+	sub	local05, #1
+	mov	local11, local05
+	add	objptr, #8
+	add	local11, objptr
+	rdbyte	arg01, local11
+	sub	objptr, #8
+	call	#_SmartSerial_tx
+	jmp	#LR__0015
+LR__0016
+	mov	ptra, fp
+	call	#popregs_
+_SmartSerial_num_ret
+	ret
+
+' 
+' '' print a hex number with the specified number
+' '' of digits; 0 means just use as many as we need
+' pub hex(val, digits = 8) | mask
+_SmartSerial_hex
+	mov	COUNT_, #5
+	call	#pushregs_
+	mov	local01, arg01
+	mov	local02, arg02
+'   if digits > 0 and digits < 8
+	cmps	local02, #0 wcz
+ if_be	jmp	#LR__0017
+	cmps	local02, #8 wcz
+ if_ae	jmp	#LR__0017
+'     mask := (|< (4*digits)) - 1
+	mov	local03, local02
+	shl	local03, #2
+	decod	local04, local03
+	sub	local04, #1
+'     val &= mask
+	mov	local05, local01
+	and	local05, local04
+	mov	local01, local05
+LR__0017
+'   num(val, 16, 0, digits)
+	mov	arg01, local01
+	mov	arg02, #16
+	mov	arg03, #0
+	mov	arg04, local02
+	call	#_SmartSerial_num
+	mov	ptra, fp
+	call	#popregs_
+_SmartSerial_hex_ret
+	ret
+
+' 
+' ''
+' '' C like formatted print
+' ''
+' pub printf(fmt = string(""), an=0, bn=0, cn=0, dn=0, en=0, fn=0) | c, valptr, val
+_SmartSerial_printf
+	mov	COUNT_, #5
+	call	#pushregs_
+	add	ptra, #48
+	wrlong	arg01, fp
+	add	fp, #4
+	wrlong	arg02, fp
+	add	fp, #4
+	wrlong	arg03, fp
+	add	fp, #4
+	wrlong	arg04, fp
+	add	fp, #4
+	wrlong	arg05, fp
+	add	fp, #4
+	wrlong	arg06, fp
+	add	fp, #4
+	wrlong	arg07, fp
+'   valptr := @an
+	sub	fp, #20
+	mov	local01, fp
+	add	fp, #28
+	wrlong	local01, fp
+	sub	fp, #32
+'   repeat
+LR__0018
+'     c := byte[fmt++]
+	rdlong	local01, fp
+	mov	local02, local01
+	add	local02, #1
+	wrlong	local02, fp
+	rdbyte	local03, local01
+	add	fp, #28
+	wrlong	local03, fp
+'     if (c == 0)
+	mov	local01, local03 wz
+	sub	fp, #28
+'       quit
+ if_e	jmp	#LR__0031
+'     if c == "%"
+	add	fp, #28
+	rdlong	local01, fp
+	sub	fp, #28
+	cmp	local01, #37 wz
+ if_ne	jmp	#LR__0025
+'       c := byte[fmt++]
+	rdlong	local01, fp
+	mov	local02, local01
+	add	local02, #1
+	wrlong	local02, fp
+	rdbyte	local03, local01
+	add	fp, #28
+	wrlong	local03, fp
+'       if (c == 0)
+	mov	local01, local03 wz
+	sub	fp, #28
+'         quit
+ if_e	jmp	#LR__0031
+'       if (c == "%")
+	add	fp, #28
+	rdlong	local01, fp
+	sub	fp, #28
+	cmp	local01, #37 wz
+ if_ne	jmp	#LR__0019
+'         tx(c)
+	add	fp, #28
+	rdlong	arg01, fp
+	sub	fp, #28
+	call	#_SmartSerial_tx
+'         next
+	jmp	#LR__0018
+LR__0019
+'       val := long[valptr]
+	add	fp, #32
+	rdlong	local01, fp
+	rdlong	local03, local01
+	add	fp, #4
+	wrlong	local03, fp
+'       valptr += 4
+	sub	fp, #4
+	rdlong	local01, fp
+	add	local01, #4
+	wrlong	local01, fp
+'       case c
+	sub	fp, #4
+	rdlong	local04, fp
+	sub	fp, #28
+	cmp	local04, #100 wz
+ if_e	jmp	#LR__0020
+	cmp	local04, #117 wz
+ if_e	jmp	#LR__0021
+	cmp	local04, #120 wz
+ if_e	jmp	#LR__0022
+	cmp	local04, #115 wz
+ if_e	jmp	#LR__0023
+	cmp	local04, #99 wz
+ if_e	jmp	#LR__0024
+	jmp	#LR__0018
+LR__0020
+' 	"d": dec(val)
+	add	fp, #36
+	rdlong	arg01, fp
+	sub	fp, #36
+'   num(val, 10, 1, 0)
+	mov	arg02, #10
+	mov	arg03, #1
+	mov	arg04, #0
+	call	#_SmartSerial_num
+	jmp	#LR__0018
+LR__0021
+' 	"u": decuns(val)
+	add	fp, #36
+	rdlong	arg01, fp
+	sub	fp, #36
+'   num(val, 10, 0, digits)
+	mov	arg04, #0
+	mov	arg02, #10
+	mov	arg03, #0
+	call	#_SmartSerial_num
+	jmp	#LR__0018
+LR__0022
+' 	"x": hex(val)
+	add	fp, #36
+	rdlong	arg01, fp
+	sub	fp, #36
+	mov	arg02, #8
+	call	#_SmartSerial_hex
+	jmp	#LR__0018
+LR__0023
+' 	"s": str(val)
+	add	fp, #36
+	rdlong	arg01, fp
+	sub	fp, #36
+	call	#_SmartSerial_str
+	jmp	#LR__0018
+LR__0024
+'         "c": tx(val)
+	add	fp, #36
+	rdlong	arg01, fp
+	sub	fp, #36
+	call	#_SmartSerial_tx
+	jmp	#LR__0018
+LR__0025
+'     elseif c == "\"
+	add	fp, #28
+	rdlong	local01, fp
+	sub	fp, #28
+	cmp	local01, #92 wz
+ if_ne	jmp	#LR__0030
+'       c := byte[fmt++]
+	rdlong	local01, fp
+	mov	local02, local01
+	add	local02, #1
+	wrlong	local02, fp
+	rdbyte	local03, local01
+	add	fp, #28
+	wrlong	local03, fp
+'       if c == 0
+	mov	local02, local03 wz
+	sub	fp, #28
+'         quit
+ if_e	jmp	#LR__0031
+'       case c
+	add	fp, #28
+	rdlong	local05, fp
+	sub	fp, #28
+	cmp	local05, #110 wz
+ if_e	jmp	#LR__0026
+	cmp	local05, #114 wz
+ if_e	jmp	#LR__0027
+	cmp	local05, #116 wz
+ if_e	jmp	#LR__0028
+	jmp	#LR__0029
+LR__0026
+'         "n": nl
+'   tx(13)
+	mov	arg01, #13
+	call	#_SmartSerial_tx
+'   tx(10)
+	mov	arg01, #10
+	call	#_SmartSerial_tx
+	jmp	#LR__0018
+LR__0027
+'         "r": tx(13)
+	mov	arg01, #13
+	call	#_SmartSerial_tx
+	jmp	#LR__0018
+LR__0028
+'         "t": tx(8)
+	mov	arg01, #8
+	call	#_SmartSerial_tx
+	jmp	#LR__0018
+LR__0029
+'         other: tx(c)
+	add	fp, #28
+	rdlong	arg01, fp
+	sub	fp, #28
+	call	#_SmartSerial_tx
+'     else
+	jmp	#LR__0018
+LR__0030
+'       tx(c)
+	add	fp, #28
+	rdlong	arg01, fp
+	sub	fp, #28
+	call	#_SmartSerial_tx
+	jmp	#LR__0018
+LR__0031
+	mov	ptra, fp
+	call	#popregs_
+_SmartSerial_printf_ret
+	ret
+hubexit
+	jmp	#cogexit
+
+__system___pinread
+	test	arg01, #32 wz
+ if_ne	mov	_var01, inb
+ if_e	mov	_var01, ina
+	shr	_var01, arg01
+	shr	arg01, #6
+	zerox	_var01, arg01
+	mov	result1, _var01
+__system___pinread_ret
+	ret
+
+LR__0032
+	byte	"Hello, world!\n"
+	byte	0
+objmem
+	long	0[10]
+stackspace
+	long	0[1]
+	org	COG_BSS_START
+_var01
+	res	1
+arg01
+	res	1
+arg02
+	res	1
+arg03
+	res	1
+arg04
+	res	1
+arg05
+	res	1
+arg06
+	res	1
+arg07
+	res	1
+local01
+	res	1
+local02
+	res	1
+local03
+	res	1
+local04
+	res	1
+local05
+	res	1
+local06
+	res	1
+local07
+	res	1
+local08
+	res	1
+local09
+	res	1
+local10
+	res	1
+local11
+	res	1
+muldiva_
+	res	1
+muldivb_
+	res	1
+	fit	480

@@ -1,0 +1,7 @@
+# QtCreator files
+*.user
+*.user.*
+
+# Generated listings and binaries
+*.binary
+*.lst

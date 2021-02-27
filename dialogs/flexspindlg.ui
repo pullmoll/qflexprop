@@ -1,0 +1,281 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>FlexspinDlg</class>
+ <widget class="QDialog" name="FlexspinDlg">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>442</width>
+    <height>288</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Flexspin binary location and settings</string>
+  </property>
+  <property name="windowIcon">
+   <iconset resource="../qflexprop.qrc">
+    <normaloff>:/images/preferences.png</normaloff>:/images/preferences.png</iconset>
+  </property>
+  <layout class="QGridLayout" name="gridLayout">
+   <item row="7" column="1" colspan="2">
+    <widget class="QCheckBox" name="cb_errors">
+     <property name="text">
+      <string>warnings as errors</string>
+     </property>
+    </widget>
+   </item>
+   <item row="6" column="1" colspan="2">
+    <widget class="QCheckBox" name="cb_warnings">
+     <property name="text">
+      <string>enable all warnings</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="3">
+    <widget class="QToolButton" name="tb_add">
+     <property name="text">
+      <string>Add path</string>
+     </property>
+     <property name="icon">
+      <iconset resource="../qflexprop.qrc">
+       <normaloff>:/images/plus.png</normaloff>:/images/plus.png</iconset>
+     </property>
+     <property name="iconSize">
+      <size>
+       <width>16</width>
+       <height>16</height>
+      </size>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="0">
+    <widget class="QLabel" name="lbl2">
+     <property name="text">
+      <string>Version info</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="1" colspan="2">
+    <widget class="QLineEdit" name="le_version_info">
+     <property name="font">
+      <font>
+       <family>Monospace</family>
+       <pointsize>12</pointsize>
+       <weight>75</weight>
+       <bold>true</bold>
+      </font>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="1" colspan="2">
+    <widget class="QLineEdit" name="le_flexspin">
+     <property name="font">
+      <font>
+       <family>Monospace</family>
+       <pointsize>12</pointsize>
+       <weight>75</weight>
+       <bold>true</bold>
+      </font>
+     </property>
+    </widget>
+   </item>
+   <item row="7" column="0">
+    <widget class="QLabel" name="lbl7">
+     <property name="text">
+      <string>Errors</string>
+     </property>
+    </widget>
+   </item>
+   <item row="10" column="1" colspan="2">
+    <spacer name="verticalSpacer">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>40</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item row="4" column="0">
+    <widget class="QLabel" name="lbl4">
+     <property name="text">
+      <string>Optimization</string>
+     </property>
+    </widget>
+   </item>
+   <item row="11" column="2">
+    <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="standardButtons">
+      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+     </property>
+    </widget>
+   </item>
+   <item row="9" column="0">
+    <widget class="QLabel" name="lbl9">
+     <property name="text">
+      <string>Skip coginit</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="1" rowspan="2" colspan="2">
+    <widget class="QListWidget" name="lw_include_paths">
+     <property name="font">
+      <font>
+       <family>Monospace</family>
+       <pointsize>12</pointsize>
+       <weight>75</weight>
+       <bold>true</bold>
+      </font>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="1">
+    <widget class="QLineEdit" name="le_optimize">
+     <property name="font">
+      <font>
+       <family>Monospace</family>
+       <pointsize>12</pointsize>
+       <weight>75</weight>
+       <bold>true</bold>
+      </font>
+     </property>
+     <property name="toolTip">
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:400;&quot;&gt;0: no optimization&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:400;&quot;&gt;1: basic optimization&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:400;&quot;&gt;2: all optimization&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="0">
+    <widget class="QLabel" name="lbl1">
+     <property name="text">
+      <string>Executable</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+     </property>
+    </widget>
+   </item>
+   <item row="5" column="0">
+    <widget class="QLabel" name="lbl5">
+     <property name="text">
+      <string>List ouput</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="0">
+    <widget class="QLabel" name="lbl3">
+     <property name="text">
+      <string>Include paths</string>
+     </property>
+    </widget>
+   </item>
+   <item row="6" column="0">
+    <widget class="QLabel" name="lbl6">
+     <property name="text">
+      <string>Warnings</string>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="3">
+    <widget class="QToolButton" name="toolButton">
+     <property name="text">
+      <string>Remove path</string>
+     </property>
+     <property name="icon">
+      <iconset resource="../qflexprop.qrc">
+       <normaloff>:/images/minus.png</normaloff>:/images/minus.png</iconset>
+     </property>
+     <property name="iconSize">
+      <size>
+       <width>16</width>
+       <height>16</height>
+      </size>
+     </property>
+    </widget>
+   </item>
+   <item row="9" column="1" colspan="2">
+    <widget class="QCheckBox" name="cb_skip_coginit">
+     <property name="text">
+      <string>skip intial coginit code</string>
+     </property>
+    </widget>
+   </item>
+   <item row="5" column="1" colspan="2">
+    <widget class="QCheckBox" name="cb_listing">
+     <property name="text">
+      <string>create a listing (P2ASM) when compiling</string>
+     </property>
+    </widget>
+   </item>
+   <item row="8" column="0">
+    <widget class="QLabel" name="lbl8">
+     <property name="text">
+      <string>HUB start address</string>
+     </property>
+    </widget>
+   </item>
+   <item row="8" column="1">
+    <widget class="QLineEdit" name="le_hubaddress"/>
+   </item>
+  </layout>
+ </widget>
+ <tabstops>
+  <tabstop>le_flexspin</tabstop>
+  <tabstop>le_version_info</tabstop>
+  <tabstop>lw_include_paths</tabstop>
+  <tabstop>tb_add</tabstop>
+  <tabstop>toolButton</tabstop>
+  <tabstop>le_optimize</tabstop>
+  <tabstop>cb_listing</tabstop>
+  <tabstop>cb_warnings</tabstop>
+  <tabstop>cb_errors</tabstop>
+  <tabstop>le_hubaddress</tabstop>
+  <tabstop>cb_skip_coginit</tabstop>
+ </tabstops>
+ <resources>
+  <include location="../qflexprop.qrc"/>
+ </resources>
+ <connections>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>accepted()</signal>
+   <receiver>FlexspinDlg</receiver>
+   <slot>accept()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>409</x>
+     <y>282</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>157</x>
+     <y>274</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>rejected()</signal>
+   <receiver>FlexspinDlg</receiver>
+   <slot>reject()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>409</x>
+     <y>282</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>286</x>
+     <y>274</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+</ui>

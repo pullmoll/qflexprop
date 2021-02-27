@@ -1,0 +1,39 @@
+<RCC>
+    <qresource prefix="/">
+        <file>images/close.png</file>
+        <file>images/delete.png</file>
+        <file>images/display.png</file>
+        <file>images/error.png</file>
+        <file>images/find.png</file>
+        <file>images/find_replace.png</file>
+        <file>images/led.xcf</file>
+        <file>images/led_0.png</file>
+        <file>images/led_1.png</file>
+        <file>images/led_2.png</file>
+        <file>images/led_3.png</file>
+        <file>images/load.png</file>
+        <file>images/minus.png</file>
+        <file>images/monitor.png</file>
+        <file>images/new.png</file>
+        <file>images/plus.png</file>
+        <file>images/preferences.png</file>
+        <file>images/preferences-serial.png</file>
+        <file>images/qflexprop.png</file>
+        <file>images/quit.png</file>
+        <file>images/reset.png</file>
+        <file>images/run.png</file>
+        <file>images/save.png</file>
+        <file>images/save_as.png</file>
+        <file>images/select_all.png</file>
+        <file>images/status.png</file>
+        <file>images/taqoz.png</file>
+        <file>images/terminal.png</file>
+        <file>images/toggle_80_132.png</file>
+        <file>images/upload.png</file>
+        <file>images/version.png</file>
+        <file>images/zoom-fit-best.png</file>
+        <file>images/zoom-in.png</file>
+        <file>images/zoom-original.png</file>
+        <file>images/zoom-out.png</file>
+    </qresource>
+</RCC>
