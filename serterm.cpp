@@ -11,6 +11,7 @@
 #include <QSerialPortInfo>
 #include <QLocale>
 #include <QFileDialog>
+#include <QTextStream>
 #include <QStandardPaths>
 #include <QTimer>
 #include "serterm.h"
@@ -174,23 +175,29 @@ void SerTerm::setup_terminal()
     Q_ASSERT(ok);
     ui->toolbar->addAction(act_reset);
 
-    QAction* act_version = new QAction(QIcon(":/images/version.png"), tr("Version"));
+    QAction* act_version = new QAction(QIcon(":/images/version.png"), tr("Print version"));
     ok = connect(act_version, &QAction::triggered,
 	    this, &SerTerm::version_triggered);
     Q_ASSERT(ok);
     ui->toolbar->addAction(act_version);
 
-    QAction* act_monitor = new QAction(QIcon(":/images/monitor.png"), tr("Monitor"));
+    QAction* act_monitor = new QAction(QIcon(":/images/monitor.png"), tr("Enter monitor"));
     ok = connect(act_monitor, &QAction::triggered,
 	    this, &SerTerm::monitor_triggered);
     Q_ASSERT(ok);
     ui->toolbar->addAction(act_monitor);
 
-    QAction* act_taqoz = new QAction(QIcon(":/images/taqoz.png"), tr("TAQOZ"));
+    QAction* act_taqoz = new QAction(QIcon(":/images/taqoz.png"), tr("Enter TAQOZ"));
     ok = connect(act_taqoz, &QAction::triggered,
 	    this, &SerTerm::taqoz_triggered);
     Q_ASSERT(ok);
     ui->toolbar->addAction(act_taqoz);
+
+    QAction* act_sendfile = new QAction(QIcon(":/images/sendfile.png"), tr("Send file"));
+    ok = connect(act_sendfile, &QAction::triggered,
+	    this, &SerTerm::sendfile_triggered);
+    Q_ASSERT(ok);
+    ui->toolbar->addAction(act_sendfile);
 }
 
 void SerTerm::setup_signals()
@@ -231,6 +238,62 @@ void SerTerm::load_config()
 	download_paths += QString("%1/Downloads").arg(QDir::homePath());
     }
     m_download_path = s.value(id_download_path, download_paths.first()).toString();
+}
+
+/**
+ * @brief Preset a QFileDialog for loading an existing source file
+ * @param title window title
+ * @return QString with the full path, or empty if cancelled
+ */
+QString SerTerm::load_file(const QString& title)
+{
+    QFileDialog dlg(this);
+    QSettings s;
+    s.beginGroup(id_grp_serterm);
+    QStringList documents = QStandardPaths::standardLocations(QStandardPaths::DocumentsLocation);
+    QString srcdflt = documents.isEmpty()
+		      ? QDir::homePath()
+		      : documents.first();
+    QString srcdir = s.value(id_sourcedir, srcdflt).toString();
+    QString filename = s.value(id_filename).toString();
+    QStringList history = s.value(id_history).toStringList();
+    s.endGroup();
+    QStringList filetypes = {
+	{"All files (*.*)"},
+	{"Text (*.txt)"},
+    };
+
+    dlg.setWindowTitle(title);
+    dlg.setAcceptMode(QFileDialog::AcceptOpen);
+    dlg.setDirectory(srcdir);
+    dlg.setFileMode(QFileDialog::ExistingFile);
+    dlg.setHistory(history);
+    dlg.setNameFilters(filetypes);
+    dlg.setOption(QFileDialog::DontUseNativeDialog, true);
+    dlg.setViewMode(QFileDialog::Detail);
+    if (!filename.isEmpty())
+	dlg.selectFile(filename);
+
+    if (QFileDialog::Accepted != dlg.exec())
+	return QString();
+
+    QStringList files = dlg.selectedFiles();
+    if (files.isEmpty())
+	return QString();
+
+    filename = files.first();
+    QFileInfo info(filename);
+    srcdir = info.dir().absolutePath();
+    s.beginGroup(id_grp_serterm);
+    s.setValue(id_sourcedir, srcdir);
+    history.insert(0, filename);
+    if (history.size() > 30)
+	history.takeLast();
+    s.setValue(id_filename, info.fileName());
+    s.setValue(id_history, history);
+    s.endGroup();
+
+    return filename;
 }
 
 void SerTerm::reset_prop()
@@ -280,6 +343,28 @@ void SerTerm::taqoz_triggered(bool checked)
 	reset_prop();
 	QByteArray taqoz("> \033");
 	port->write(taqoz);
+    }
+}
+
+void SerTerm::sendfile_triggered(bool checked)
+{
+    Q_UNUSED(checked);
+    QEventLoop loop(this);
+    QString filename = load_file(tr("Select file to send"));
+    if (filename.isEmpty())
+	return;
+    QFile file(filename);
+    if (file.open(QIODevice::ReadOnly)) {
+	QTextStream str(&file);
+	str.setCodec("UTF-8");
+
+	while (!str.atEnd()) {
+	    QString line = str.readLine();
+	    QByteArray utf8 =  line.toUtf8() + '\n';
+	    write(utf8);
+	    loop.processEvents();
+	}
+	file.close();
     }
 }
 

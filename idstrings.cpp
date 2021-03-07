@@ -55,6 +55,8 @@ const QLatin1String id_terminal("terminal");
 const QLatin1String id_zoom("zoom");
 const QLatin1String id_font_family("font_family");
 
+const QLatin1String id_grp_serterm("serterm");
+
 const QLatin1String id_dcd("dcd");
 const QLatin1String id_dsr("dsr");
 const QLatin1String id_dtr("dtr");

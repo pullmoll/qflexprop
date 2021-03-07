@@ -56,6 +56,8 @@ extern const QLatin1String id_terminal;
 extern const QLatin1String id_zoom;
 extern const QLatin1String id_font_family;
 
+extern const QLatin1String id_grp_serterm;
+
 extern const QLatin1String id_dcd;
 extern const QLatin1String id_dsr;
 extern const QLatin1String id_dtr;

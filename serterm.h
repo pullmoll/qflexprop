@@ -57,6 +57,7 @@ private slots:
     void version_triggered(bool checked = false);
     void monitor_triggered(bool checked = false);
     void taqoz_triggered(bool checked = false);
+    void sendfile_triggered(bool checked = false);
 
 protected:
     void keyPressEvent(QKeyEvent* event) override;
@@ -72,6 +73,7 @@ private:
     bool m_scroll_lock;				//!< Keyboard SCROLL lock flag
     bool m_local_echo;				//!< Local echo if true
 
+    QString load_file(const QString& title);
     void reset_prop();
     void setup_signals();
     void setup_terminal();
