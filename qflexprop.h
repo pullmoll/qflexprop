@@ -80,6 +80,8 @@ private slots:
     void on_action_Cut_triggered();
     void on_action_Copy_triggered();
     void on_action_Paste_triggered();
+
+    void on_action_Settings_triggered();
     void on_action_Configure_serialport_triggered();
     void on_action_Configure_flexspin_triggered();
 
@@ -129,5 +131,5 @@ private:
     bool flexspin(QString* p_p2asm = nullptr, QByteArray* p_binary = nullptr);
 
     QPixmap led(const QString& type, int state);
-    static QString quoted(const QString& src);
+    static QString quoted(const QString& src, const QChar quote = QChar('"'));
 };

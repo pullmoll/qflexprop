@@ -31,7 +31,8 @@ SOURCES += \
     $$PWD/term/vtglyphs.cpp \
     $$PWD/term/vtline.cpp \
     $$PWD/term/vtscrollarea.cpp \
-    dialogs/aboutdlg.cpp
+    dialogs/aboutdlg.cpp \
+    dialogs/settingsdlg.cpp
 
 HEADERS += \
     $$PWD/propconst.h \
@@ -52,14 +53,16 @@ HEADERS += \
     $$PWD/term/vtglyphs.h \
     $$PWD/term/vtline.h \
     $$PWD/term/vtscrollarea.h \
-    dialogs/aboutdlg.h
+    dialogs/aboutdlg.h \
+    dialogs/settingsdlg.h
 
 FORMS += \
     $$PWD/qflexprop.ui \
     $$PWD/dialogs/flexspindlg.ui \
     $$PWD/dialogs/serialportdlg.ui \
     $$PWD/serterm.ui \
-    dialogs/aboutdlg.ui
+    dialogs/aboutdlg.ui \
+    dialogs/settingsdlg.ui
 
 TRANSLATIONS += \
     $$PWD/qflexprop_de_DE.ts

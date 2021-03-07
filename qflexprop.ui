@@ -97,6 +97,7 @@
     <property name="title">
      <string>&amp;Preferences</string>
     </property>
+    <addaction name="action_Settings"/>
     <addaction name="action_Configure_flexspin"/>
     <addaction name="action_Configure_serialport"/>
    </widget>
@@ -332,6 +333,11 @@
   <action name="action_Show_binary">
    <property name="text">
     <string>Show &amp;binary (DAT)</string>
+   </property>
+  </action>
+  <action name="action_Settings">
+   <property name="text">
+    <string>&amp;Settings</string>
    </property>
   </action>
  </widget>

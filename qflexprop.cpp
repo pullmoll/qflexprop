@@ -28,9 +28,10 @@
 #include "qflexprop.h"
 #include "aboutdlg.h"
 #include "ui_qflexprop.h"
-#include "flexspindlg.h"
 #include "serterm.h"
+#include "flexspindlg.h"
 #include "serialportdlg.h"
+#include "settingsdlg.h"
 #include "propload.h"
 
 QFlexProp::QFlexProp(QWidget *parent)
@@ -357,11 +358,11 @@ void QFlexProp::load_settings()
     QString font_default = QLatin1String("Courier");
 #endif
     // TODO: add preferences dialog for the font, weight and size
-    QString font_family = s.value(id_fixedfont_family, font_default).toString();
-    int font_weight = s.value(id_fixedfont_weight, QFont::Normal).toInt();
-    int font_size = s.value(id_fixedfont_size, 12).toInt();
+    const QString family = s.value(id_fixedfont_family, font_default).toString();
+    const int size = s.value(id_fixedfont_size, 12).toInt();
+    const int weight = s.value(id_fixedfont_weight, QFont::Normal).toInt();
     s.endGroup();
-    m_fixedfont = QFont(font_family, font_size, font_weight);
+    m_fixedfont = QFont(family, size, weight);
 
     s.beginGroup(id_grp_serialport);
     m_port_name = s.value(id_port_name, QLatin1String("ttyUSB0")).toString();
@@ -404,6 +405,12 @@ void QFlexProp::save_settings()
     s.beginGroup(id_grp_application);
     // Save window geometry
     s.setValue(id_window_geometry, saveGeometry());
+    const QString& family = m_fixedfont.family();
+    const int size = m_fixedfont.pointSize();
+    const int weight = m_fixedfont.weight();
+    s.setValue(id_fixedfont_family, family);
+    s.setValue(id_fixedfont_size, size);
+    s.setValue(id_fixedfont_weight, weight);
     s.endGroup();
 
     s.beginGroup(id_grp_serialport);
@@ -812,10 +819,8 @@ void QFlexProp::setup_port()
     ok = connect(m_dev, &QSerialPort::readyRead,
 		 this, &QFlexProp::dev_ready_read,
 		 Qt::UniqueConnection);
-    if (st) {
-	st->set_device(m_dev);
-    }
     Q_ASSERT(ok);
+    st->set_device(m_dev);
 }
 
 void QFlexProp::open_port()
@@ -1113,6 +1118,15 @@ void QFlexProp::on_action_Paste_triggered()
 
 }
 
+void QFlexProp::on_action_Settings_triggered()
+{
+    SettingsDlg dlg(this);
+    dlg.set_font(m_fixedfont);
+    if (QDialog::Accepted != dlg.exec())
+	return;
+    m_fixedfont = dlg.font();
+}
+
 void QFlexProp::on_action_Configure_serialport_triggered()
 {
     bool was_open = m_dev->isOpen();
@@ -1198,11 +1212,10 @@ void QFlexProp::on_action_Configure_flexspin_triggered()
     s.endGroup();
 }
 
-QString QFlexProp::quoted(const QString& src)
+QString QFlexProp::quoted(const QString& src, const QChar quote)
 {
-    if (src.contains(QChar::Space)) {
-	return QString("'%1'").arg(src);
-    }
+    if (src.contains(QChar::Space))
+	return QString("%1%2%3").arg(quote).arg(src).arg(quote);
     return src;
 }
 
@@ -1225,7 +1238,7 @@ bool QFlexProp::flexspin(QString* p_p2asm, QByteArray* p_binary)
     // append include paths
     foreach(const QString& include_path, m_flexspin_include_paths) {
 	// We need to quote paths with embedded spaces (e.g. Windows)
-	args += QString("-L %1").arg(quoted(include_path));
+	args += QString("-I %1").arg(quoted(include_path));
     }
 
     if (m_flexspin_hub_address > 0) {
