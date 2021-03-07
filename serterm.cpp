@@ -165,7 +165,7 @@ void SerTerm::setup_terminal()
     ui->vterm->set_font_family(m_font_family);
     ui->vterm->set_zoom(m_zoom);
 
-    ui->toolbar->setIconSize(QSize(16, 16));
+    ui->toolbar->setIconSize(QSize(20, 20));
     ui->toolbar->setToolButtonStyle(Qt::ToolButtonIconOnly);
 
     QAction* act_reset = new QAction(QIcon(":/images/reset.png"), tr("Reset"));

@@ -32,7 +32,8 @@ SOURCES += \
     $$PWD/term/vtline.cpp \
     $$PWD/term/vtscrollarea.cpp \
     dialogs/aboutdlg.cpp \
-    dialogs/settingsdlg.cpp
+    dialogs/settingsdlg.cpp \
+    dialogs/textbrowserdlg.cpp
 
 HEADERS += \
     $$PWD/propconst.h \
@@ -54,7 +55,8 @@ HEADERS += \
     $$PWD/term/vtline.h \
     $$PWD/term/vtscrollarea.h \
     dialogs/aboutdlg.h \
-    dialogs/settingsdlg.h
+    dialogs/settingsdlg.h \
+    dialogs/textbrowserdlg.h
 
 FORMS += \
     $$PWD/qflexprop.ui \
@@ -62,7 +64,8 @@ FORMS += \
     $$PWD/dialogs/serialportdlg.ui \
     $$PWD/serterm.ui \
     dialogs/aboutdlg.ui \
-    dialogs/settingsdlg.ui
+    dialogs/settingsdlg.ui \
+    dialogs/textbrowserdlg.ui
 
 TRANSLATIONS += \
     $$PWD/qflexprop_de_DE.ts

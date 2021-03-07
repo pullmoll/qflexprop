@@ -56,11 +56,18 @@ const QString Util::dump(const QString& _func, const QByteArray& data, const int
     while (offs < data.length()) {
 	const QString bytes = to_hex(data.mid(offs, bytes_per_line));
 	const QString ascii = to_asc(data.mid(offs, bytes_per_line));
-	dump += QString("%1: %2: %3 - %4")
-		.arg(_func)
-		.arg(offs, 4, 16, QChar('0'))
-		.arg(bytes, -3 * bytes_per_line)
-		.arg(ascii);
+	if (_func.isEmpty()) {
+	    dump += QString("%1: %2 - %3")
+		    .arg(offs, 4, 16, QChar('0'))
+		    .arg(bytes, -3 * bytes_per_line)
+		    .arg(ascii);
+	} else {
+	    dump += QString("%1: %2: %3 - %4")
+		    .arg(_func)
+		    .arg(offs, 4, 16, QChar('0'))
+		    .arg(bytes, -3 * bytes_per_line)
+		    .arg(ascii);
+	}
 	offs += bytes_per_line;
     }
     return dump.join(QChar::LineFeed);

@@ -26,13 +26,14 @@
 #include "idstrings.h"
 #include "propedit.h"
 #include "qflexprop.h"
+#include "propload.h"
 #include "aboutdlg.h"
 #include "ui_qflexprop.h"
 #include "serterm.h"
 #include "flexspindlg.h"
 #include "serialportdlg.h"
 #include "settingsdlg.h"
-#include "propload.h"
+#include "textbrowserdlg.h"
 
 QFlexProp::QFlexProp(QWidget *parent)
     : QMainWindow(parent)
@@ -106,21 +107,13 @@ PropEdit* QFlexProp::current_editor() const
     }
 
     // Check if this tab has a PropEdit
-    QString pe_id = QString("pe_%1").arg(curtab);
-    PropEdit *pe = wdg->findChild<PropEdit *>(pe_id);
+    PropEdit *pe = wdg->findChild<PropEdit *>(QLatin1String("pe"));
     if (!pe) {
 	qDebug("%s: current tab %d has no PropEdit '%s'?", __func__,
-	       curtab, qPrintable(pe_id));
+	       curtab, qPrintable(QLatin1String("pe")));
 	return nullptr;
     }
 
-    // Redundant check if this tab's PropEdit name is ok
-    QString pe_name = pe->objectName();
-    if (!pe_name.startsWith(QLatin1String("pe_"))) {
-	qDebug("%s: current tab %d PropEdit name is wrong '%s'?", __func__,
-	       curtab, qPrintable(pe_id));
-	return nullptr;
-    }
     return pe;
 }
 
@@ -134,18 +127,10 @@ QTextBrowser* QFlexProp::current_browser() const
 	return nullptr;
     }
 
-    QString tb_id = QString("tb_%1").arg(curtab);
-    QTextBrowser *tb = wdg->findChild<QTextBrowser *>(tb_id);
+    QTextBrowser *tb = wdg->findChild<QTextBrowser *>(QLatin1String("tb"));
     if (!tb) {
 	qDebug("%s: current tab %d has no text browser '%s'?", __func__,
-	       curtab, qPrintable(tb_id));
-	return nullptr;
-    }
-
-    QString tb_name = tb->objectName();
-    if (!tb_name.startsWith(QLatin1String("tb_"))) {
-	qDebug("%s: current tab %d text browser name is wrong '%s'?", __func__,
-	       curtab, qPrintable(tb_id));
+	       curtab, qPrintable(QLatin1String("tb")));
 	return nullptr;
     }
     return tb;
@@ -491,20 +476,23 @@ void QFlexProp::update_pinout(bool redo)
 	    update_baud_rate(stty->baudRate(), QSerialPort::AllDirections);
 	    update_parity_data_stop();
 	    update_flow_control(stty->flowControl());
-	    QTimer::singleShot(25, this, SLOT(update_pinout()));
+	    QTimer::singleShot(5, this, SLOT(update_pinout()));
 	}
     } else if (redo) {
-	QTimer::singleShot(25, this, SLOT(update_pinout()));
+	QTimer::singleShot(5, this, SLOT(update_pinout()));
     }
 }
 
 void QFlexProp::tab_changed(int index)
 {
     Q_UNUSED(index)
-    PropEdit* pe = current_editor();
-    bool enable = pe != nullptr;
-    ui->action_Show_listing->setEnabled(enable && !pe->property(id_tab_p2asm).isNull());
-    ui->action_Show_binary->setEnabled(enable && !pe->property(id_tab_binary).isNull());
+    const PropEdit* pe = current_editor();
+    const bool enable = pe != nullptr;
+    const bool has_listing = pe && !pe->property(id_tab_p2asm).isNull();
+    const bool has_binary = pe && !pe->property(id_tab_p2asm).isNull();
+    ui->action_Show_listing->setEnabled(enable && has_listing);
+    ui->action_Show_binary->setEnabled(enable && has_binary);
+    ui->action_Verbose->setEnabled(enable);
     ui->action_Compile->setEnabled(enable);
     ui->action_Upload_P2->setEnabled(enable);
     ui->action_Run->setEnabled(enable);
@@ -516,7 +504,6 @@ void QFlexProp::log_message(const QString& message)
     log_status(message);
     loop.processEvents();
 }
-
 
 void QFlexProp::log_status(const QString& message, bool icon)
 {
@@ -935,19 +922,19 @@ int QFlexProp::insert_tab(const QString& filename)
     tab->setObjectName(QString("tab_%1").arg(curtab));
 
     vlay = new QVBoxLayout(tab);
-    vlay->setObjectName(QString("vlay_%1").arg(curtab));
+    vlay->setObjectName(QLatin1String("vlay"));
 
     spl = new QSplitter(Qt::Vertical);
-    spl->setObjectName(QString("spl_%1").arg(curtab));
+    spl->setObjectName(QLatin1String("spl"));
 
     vlay->addWidget(spl);
 
     sa = new QScrollArea();
-    sa->setObjectName(QString("sa_%1").arg(curtab));
+    sa->setObjectName(QLatin1String("sa"));
     sa->setWidgetResizable(true);
 
     pe = new PropEdit();
-    pe->setObjectName(QString("pe_%1").arg(curtab));
+    pe->setObjectName(QLatin1String("pe"));
     pe->setGeometry(QRect(0, 0, 512, 512));
     pe->setFont(m_fixedfont);
 
@@ -955,9 +942,9 @@ int QFlexProp::insert_tab(const QString& filename)
     spl->addWidget(sa);
 
     tb = new QTextBrowser();
-    tb->setObjectName(QString("tb_%1").arg(curtab));
+    tb->setObjectName(QLatin1String("tb"));
     tb->setWordWrapMode(QTextOption::NoWrap);
-    tb->setFont(QFont(QStringLiteral("Monospace"), tb->font().pointSize()));
+    tb->setFont(m_fixedfont);
     spl->addWidget(tb);
 
     pe->setFilename(filename);
@@ -1095,27 +1082,42 @@ void QFlexProp::on_action_Quit_triggered()
 
 void QFlexProp::on_action_Select_all_triggered()
 {
-
+    PropEdit* pe = current_editor();
+    if (!pe)
+	return;
+    pe->selectAll();
 }
 
 void QFlexProp::on_action_Delete_triggered()
 {
-
+    PropEdit* pe = current_editor();
+    if (!pe)
+	return;
+    pe->selectAll();
 }
 
 void QFlexProp::on_action_Cut_triggered()
 {
-
+    PropEdit* pe = current_editor();
+    if (!pe)
+	return;
+    pe->cut();
 }
 
 void QFlexProp::on_action_Copy_triggered()
 {
-
+    PropEdit* pe = current_editor();
+    if (!pe)
+	return;
+    pe->copy();
 }
 
 void QFlexProp::on_action_Paste_triggered()
 {
-
+    PropEdit* pe = current_editor();
+    if (!pe)
+	return;
+    pe->paste();
 }
 
 void QFlexProp::on_action_Settings_triggered()
@@ -1125,6 +1127,12 @@ void QFlexProp::on_action_Settings_triggered()
     if (QDialog::Accepted != dlg.exec())
 	return;
     m_fixedfont = dlg.font();
+    // Update any open PropEdit's fonts
+    for(int i = 0; i < ui->tabWidget->count(); i++) {
+	PropEdit* pe = ui->tabWidget->findChild<PropEdit*>(QLatin1String("pe"));
+	if (pe)
+	    pe->setFont(m_fixedfont);
+    }
 }
 
 void QFlexProp::on_action_Configure_serialport_triggered()
@@ -1210,6 +1218,29 @@ void QFlexProp::on_action_Configure_flexspin_triggered()
     s.setValue(id_flexspin_hub_address, m_flexspin_hub_address);
     s.setValue(id_flexspin_skip_coginit, m_flexspin_skip_coginit);
     s.endGroup();
+}
+
+void QFlexProp::on_action_Show_listing_triggered()
+{
+    PropEdit* pe = current_editor();
+    if (!pe)
+	return;
+    TextBrowserDlg dlg(this);
+    QString text = pe->property(id_tab_p2asm).toString();
+    dlg.set_text(text);
+    dlg.exec();
+}
+
+void QFlexProp::on_action_Show_binary_triggered()
+{
+    PropEdit* pe = current_editor();
+    if (!pe)
+	return;
+    TextBrowserDlg dlg(this);
+    QByteArray data = pe->property(id_tab_binary).toByteArray();
+    QString dump = util.dump(QString(), data);
+    dlg.set_text(dump);
+    dlg.exec();
 }
 
 QString QFlexProp::quoted(const QString& src, const QChar quote)
@@ -1327,6 +1358,9 @@ bool QFlexProp::flexspin(QString* p_p2asm, QByteArray* p_binary)
 	}
 	binfile.remove();
     }
+
+    tab_changed(ui->tabWidget->currentIndex());
+
     return true;
 }
 
@@ -1359,7 +1393,7 @@ void QFlexProp::on_action_Run_triggered()
     m_transfer.lock();
     st->reset();
     PropLoad phex(m_dev, this);
-    phex.set_verbose();
+    phex.set_verbose(ui->action_Verbose->isChecked());
     // phex.set_use_checksum(false);
     phex.setProperty(id_process_tb, QVariant::fromValue(tb));
     connect(&phex, &PropLoad::Error,

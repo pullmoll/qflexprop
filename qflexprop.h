@@ -85,6 +85,9 @@ private slots:
     void on_action_Configure_serialport_triggered();
     void on_action_Configure_flexspin_triggered();
 
+    void on_action_Show_listing_triggered();
+    void on_action_Show_binary_triggered();
+
     void on_action_Compile_triggered();
     void on_action_Upload_P2_triggered();
     void on_action_Run_triggered();

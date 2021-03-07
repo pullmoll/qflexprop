@@ -87,8 +87,8 @@ bool PropEdit::changed() const
     QString text = QPlainTextEdit::toPlainText();
     QCryptographicHash sha256(QCryptographicHash::Sha256);
     sha256.addData(text.toUtf8());
-    const QByteArray old_hash = property(prop_sha256).toByteArray();
     const QByteArray new_hash = sha256.result();
+    const QByteArray old_hash = property(prop_sha256).toByteArray();
     return old_hash != new_hash;
 }
 
@@ -116,6 +116,8 @@ QString PropEdit::filetype_name() const
 	return QLatin1String("C");
     case FT_SPIN:
 	return QLatin1String("Spin");
+    case FT_SPIN2:
+	return QLatin1String("Spin (P2)");
     case FT_PASM:
 	return QLatin1String("PAsm (P1)");
     case FT_P2ASM:
