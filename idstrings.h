@@ -97,5 +97,6 @@ extern const QLatin1String id_flexspin_hub_address;
 extern const QLatin1String id_flexspin_skip_coginit;
 
 extern const char id_process_tb[];
+extern const char id_tab_lst[];
 extern const char id_tab_p2asm[];
 extern const char id_tab_binary[];

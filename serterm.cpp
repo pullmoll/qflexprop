@@ -573,7 +573,7 @@ void SerTerm::keyPressEvent(QKeyEvent* event)
     case Qt::Key_Direction_R:
 	break;
 
-	// 7 bit printable ASCII
+    // 7 bit printable ASCII
     case Qt::Key_Space:
 	key = QChar::Space;
 	break;
@@ -1055,11 +1055,11 @@ void SerTerm::keyPressEvent(QKeyEvent* event)
 	key = QChar(L'ÿ');
 	break;
 
-	// International input method support (X keycode - 0xEE00, the
-	// definition follows Qt/Embedded 2.3.7) Only interesting if
-	// you are writing your own input method
+    // International input method support (X keycode - 0xEE00, the
+    // definition follows Qt/Embedded 2.3.7) Only interesting if
+    // you are writing your own input method
 
-	// International & multi-key character composition
+    // International & multi-key character composition
     case Qt::Key_AltGr:
     case Qt::Key_Multi_key:  // Multi-key character compose
     case Qt::Key_Codeinput:
@@ -1068,7 +1068,7 @@ void SerTerm::keyPressEvent(QKeyEvent* event)
     case Qt::Key_PreviousCandidate:
 	break;
 
-	// Misc Functions
+    // Misc Functions
     case Qt::Key_Mode_switch:  // Character set switch
 	// Key_script_switch:  // Alias for mode_switch
 
@@ -1095,10 +1095,10 @@ void SerTerm::keyPressEvent(QKeyEvent* event)
 	//Key_Mae_Koho:  // Previous Candidate
 	break;
 
-	// Korean keyboard support
-	//
-	// In fact, many Korean users need only 2 keys, Key_Hangul and
-	// Key_Hangul_Hanja. But rest of the keys are good for future.
+    // Korean keyboard support
+    //
+    // In fact, many Korean users need only 2 keys, Key_Hangul and
+    // Key_Hangul_Hanja. But rest of the keys are good for future.
 
     case Qt::Key_Hangul:  // Hangul start/stop(toggle)
     case Qt::Key_Hangul_Start:  // Hangul start
@@ -1118,7 +1118,7 @@ void SerTerm::keyPressEvent(QKeyEvent* event)
 	//Key_Hangul_switch:  // Alias for mode_switch
 	break;
 
-	// dead keys (X keycode - 0xED00 to avoid the conflict)
+    // dead keys (X keycode - 0xED00 to avoid the conflict)
     case Qt::Key_Dead_Grave:
 	key = QChar(0x0300);
 	break;
@@ -1158,6 +1158,8 @@ void SerTerm::keyPressEvent(QKeyEvent* event)
     case Qt::Key_Dead_Ogonek:
 	key = QChar(0x0328);
 	break;
+
+    // TODO: set key = QChar(...)
     case Qt::Key_Dead_Iota:
     case Qt::Key_Dead_Voiced_Sound:
     case Qt::Key_Dead_Semivoiced_Sound:
@@ -1196,7 +1198,7 @@ void SerTerm::keyPressEvent(QKeyEvent* event)
     case Qt::Key_Dead_Longsolidusoverlay:
 	break;
 
-	// multimedia/internet keys - ignored by default - see QKeyEvent c'tor
+    // multimedia/internet keys - ignored by default - see QKeyEvent c'tor
     case Qt::Key_Back:
     case Qt::Key_Forward:
     case Qt::Key_Stop:
@@ -1365,12 +1367,12 @@ void SerTerm::keyPressEvent(QKeyEvent* event)
 
     case Qt::Key_MediaLast:
 
-	// Keypad navigation keys
+    // Keypad navigation keys
     case Qt::Key_Select:
     case Qt::Key_Yes:
     case Qt::Key_No:
 
-	// Newer misc keys
+    // Newer misc keys
     case Qt::Key_Cancel:
     case Qt::Key_Printer:
     case Qt::Key_Execute:
@@ -1382,7 +1384,7 @@ void SerTerm::keyPressEvent(QKeyEvent* event)
 	//Key_Oyayubi_Right:    // IME: Right Oyayubi key
     case Qt::Key_Exit:
 
-	// Device keys
+    // Device keys
     case Qt::Key_Context1:
     case Qt::Key_Context2:
     case Qt::Key_Context3:

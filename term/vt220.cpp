@@ -93,11 +93,11 @@ vt220::vt220(QWidget* parent)
     , m_utf_code(UC_INVALID)
     , m_utf_code_min(0)
 {
-    qDebug("%s: %08x", "CTRL_ACTION", CTRL_ACTION);
-    qDebug("%s: %08x", "CTRL_ALWAYS", CTRL_ALWAYS);
+    // qDebug("%s: %08x", "CTRL_ACTION", CTRL_ACTION);
+    // qDebug("%s: %08x", "CTRL_ALWAYS", CTRL_ALWAYS);
     setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-    term_reset(m_terminal, m_width, m_height);
     set_font(font_w, font_h, font_d);
+    term_reset(m_terminal, m_width, m_height);
     m_blink_timer = startTimer(250);
 
 }

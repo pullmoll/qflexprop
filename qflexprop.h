@@ -131,7 +131,9 @@ private:
     QString load_file(const QString& title);
     QString save_file(const QString& filename, const QString& title);
 
-    bool flexspin(QByteArray* p_binary = nullptr, QString* p_p2asm = nullptr);
+    bool flexspin(QByteArray* p_binary = nullptr,
+		  QString* p_p2asm = nullptr,
+		  QString* p_lst = nullptr);
 
     QPixmap led(const QString& type, int state);
     static QString quoted(const QString& src, const QChar quote = QChar('"'));

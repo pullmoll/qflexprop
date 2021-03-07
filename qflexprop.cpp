@@ -489,7 +489,7 @@ void QFlexProp::tab_changed(int index)
     const PropEdit* pe = current_editor();
     const bool enable = pe != nullptr;
     const bool has_listing = pe && !pe->property(id_tab_p2asm).isNull();
-    const bool has_binary = pe && !pe->property(id_tab_p2asm).isNull();
+    const bool has_binary = pe && !pe->property(id_tab_binary).isNull();
     ui->action_Show_listing->setEnabled(enable && has_listing);
     ui->action_Show_binary->setEnabled(enable && has_binary);
     ui->action_Verbose->setEnabled(enable);
@@ -1227,7 +1227,7 @@ void QFlexProp::on_action_Show_listing_triggered()
     if (!pe)
 	return;
     TextBrowserDlg dlg(this);
-    QString text = pe->property(id_tab_p2asm).toString();
+    QString text = pe->property(id_tab_lst).toString();
     dlg.set_text(text);
     dlg.exec();
 }
@@ -1251,14 +1251,21 @@ QString QFlexProp::quoted(const QString& src, const QChar quote)
     return src;
 }
 
-bool QFlexProp::flexspin(QByteArray* p_binary, QString* p_p2asm)
+/**
+ * @brief Run flexspin with the configured switches and return the results
+ * @param p_binary pointer to a QByteArray for the binary result
+ * @param p_p2asm pointer to a QString for the p2asm output
+ * @param p_lst pointer to a QString for the listing
+ * @return
+ */
+bool QFlexProp::flexspin(QByteArray* p_binary, QString* p_p2asm, QString* p_lst)
 {
-    PropEdit *pe = current_editor();
-    if (!pe) {
-	return false;
-    }
     QTextBrowser *tb = current_browser();
     Q_ASSERT(tb);
+    PropEdit *pe = current_editor();
+    if (!pe)
+	return false;
+
     tb->clear();
 
     QFile src(pe->filename());
@@ -1273,6 +1280,7 @@ bool QFlexProp::flexspin(QByteArray* p_binary, QString* p_p2asm)
 	args += QString("-I %1").arg(quoted(include_path));
     }
 
+    // append a HUB address if configured
     if (m_flexspin_hub_address > 0) {
 	args += QString("-H %1").arg(m_flexspin_hub_address, 4, 16, QChar('0'));
 	// Add flag for skip coginit
@@ -1280,21 +1288,22 @@ bool QFlexProp::flexspin(QByteArray* p_binary, QString* p_p2asm)
 	    args += QStringLiteral("-E");
     }
 
-    // generate a listing
+    // generate a listing if enabled
     if (m_flexspin_listing)
 	args += QStringLiteral("-l");
 
-    // add option for warnings
+    // add option for warnings if enabled
     if (m_flexspin_warnings)
 	args += QStringLiteral("-Wall");
 
-    // add option for errors
+    // add option for errors if enabled
     if (m_flexspin_errors)
 	args += QStringLiteral("-Werror");
 
     // add source filename
     args += src.fileName();
 
+    // print the command to be executed
     tb->setTextColor(Qt::blue);
     tb->append(QString("%1 %2")
 	       .arg(m_flexspin_binary)
@@ -1305,6 +1314,7 @@ bool QFlexProp::flexspin(QByteArray* p_binary, QString* p_p2asm)
     connect(&process, &QProcess::channelReadyRead,
 	    this, &QFlexProp::channelReadyRead);
 
+    // run the command
     process.start(m_flexspin_binary, args);
     if (QProcess::Starting == process.state()) {
 	if (!process.waitForStarted()) {
@@ -1314,6 +1324,8 @@ bool QFlexProp::flexspin(QByteArray* p_binary, QString* p_p2asm)
 	    return false;
 	}
     }
+
+    // wait for the process to finish
     do {
 	if (!process.waitForFinished()) {
 	    qCritical("%s: result code %d", __func__, process.exitCode());
@@ -1323,19 +1335,38 @@ bool QFlexProp::flexspin(QByteArray* p_binary, QString* p_p2asm)
 	}
     } while (QProcess::Running == process.state());
 
-    // check, load, and remove intermediate p2asm file
     QFileInfo info(src.fileName());
+
+    // check, load, and remove listing file
+    QString lst_filename = QString("%1/%2.lst")
+			     .arg(info.absoluteDir().path())
+			     .arg(info.baseName());
+    QFile lst(lst_filename);
+    if (lst.exists()) {
+	if (lst.open(QIODevice::ReadOnly)) {
+	    QString listing = QString::fromUtf8(lst.readAll());
+	    pe->setProperty(id_tab_lst, listing);
+	    if (p_lst) {
+		// caller wants the listing
+		*p_lst = listing;
+	    }
+	    lst.close();
+	}
+	lst.remove();
+    }
+
+    // check, load, and remove intermediate p2asm file
     QString p2asm_filename = QString("%1/%2.p2asm")
 			     .arg(info.absoluteDir().path())
 			     .arg(info.baseName());
     QFile p2asm(p2asm_filename);
     if (p2asm.exists()) {
 	if (p2asm.open(QIODevice::ReadOnly)) {
-	    QString listing = QString::fromUtf8(p2asm.readAll());
-	    pe->setProperty(id_tab_p2asm, listing);
+	    QString output = QString::fromUtf8(p2asm.readAll());
+	    pe->setProperty(id_tab_p2asm, output);
 	    if (p_p2asm) {
-		// caller wants the listing
-		*p_p2asm = listing;
+		// caller wants the output
+		*p_p2asm = output;
 	    }
 	    p2asm.close();
 	}

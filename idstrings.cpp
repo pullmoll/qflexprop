@@ -93,7 +93,8 @@ const QLatin1String id_flexspin_hub_address("hub_adress");
 const QLatin1String id_flexspin_skip_coginit("skip_coginit");
 
 const char id_process_tb[] = "tb";		//!< for property QTextBrowser* of QObjects
-const char id_tab_p2asm[] = "p2asm";		//!< for property p2asm listing of tab widgets
+const char id_tab_lst[] = "lst";		//!< for property lst listing of tab widgets
+const char id_tab_p2asm[] = "p2asm";		//!< for property p2asm (intermediate) of tab widgets
 const char id_tab_binary[] = "binary";		//!< for property binary output of tab widgets
 
 

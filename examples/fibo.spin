@@ -1,7 +1,7 @@
 '' simple fibonacci program
 
 #ifndef _BAUD
-#define _BAUD 115_200
+#define _BAUD 230_400
 #endif
 
 CON
