@@ -99,21 +99,24 @@ PropEdit* QFlexProp::current_editor() const
     const int curtab = ui->tabWidget->currentIndex();
     QWidget *wdg = ui->tabWidget->widget(curtab);
     if (!wdg) {
-	qDebug("%s: current tab %d has no widget?", __func__,
+	qCritical("%s: current tab %d has no widget?", __func__,
 	       curtab);
 	return nullptr;
     }
 
+    // Check if this tab has a PropEdit
     QString pe_id = QString("pe_%1").arg(curtab);
     PropEdit *pe = wdg->findChild<PropEdit *>(pe_id);
     if (!pe) {
-	qDebug("%s: current tab %d has no propeller editor '%s'?", __func__,
+	qDebug("%s: current tab %d has no PropEdit '%s'?", __func__,
 	       curtab, qPrintable(pe_id));
 	return nullptr;
     }
+
+    // Redundant check if this tab's PropEdit name is ok
     QString pe_name = pe->objectName();
     if (!pe_name.startsWith(QLatin1String("pe_"))) {
-	qDebug("%s: current tab %d propeller editor name is wrong '%s'?", __func__,
+	qDebug("%s: current tab %d PropEdit name is wrong '%s'?", __func__,
 	       curtab, qPrintable(pe_id));
 	return nullptr;
     }
@@ -471,10 +474,13 @@ void QFlexProp::update_pinout(bool redo)
     }
 }
 
-void QFlexProp::tab_changed(int idex)
+void QFlexProp::tab_changed(int index)
 {
+    Q_UNUSED(index)
     PropEdit* pe = current_editor();
     bool enable = pe != nullptr;
+    ui->action_Show_listing->setEnabled(enable && !pe->property(id_tab_p2asm).isNull());
+    ui->action_Show_binary->setEnabled(enable && !pe->property(id_tab_binary).isNull());
     ui->action_Compile->setEnabled(enable);
     ui->action_Upload_P2->setEnabled(enable);
     ui->action_Run->setEnabled(enable);
@@ -1092,34 +1098,45 @@ void QFlexProp::on_action_Paste_triggered()
 
 void QFlexProp::on_action_Configure_serialport_triggered()
 {
-    QSettings s;
     bool was_open = m_dev->isOpen();
+    QSettings s;
+    SerialPortDlg::Settings settings;
     SerialPortDlg dlg(this);
-    if (QDialog::Accepted == dlg.exec()) {
-	SerialPortDlg::Settings settings = dlg.settings();
-	if (was_open) {
-	    close_port();
-	}
-	// Use the selected settings for the global serial port settings
-	m_port_name = settings.name;
-	m_baud_rate = settings.baud_rate;
-	m_parity = settings.parity;
-	m_data_bits = settings.data_bits;
-	m_stop_bits = settings.stop_bits;
-	m_flow_control = settings.flow_control;
-	m_local_echo = settings.local_echo;
-	qDebug("%s: port name    : %s", __func__, qPrintable(m_port_name));
-	qDebug("%s: baud rate    : %d", __func__, m_baud_rate);
-	qDebug("%s: parity       : %s", __func__, qPrintable(parity_str.value(m_parity)));
-	qDebug("%s: data bits    : %s", __func__, qPrintable(data_bits_str.value(m_data_bits)));
-	qDebug("%s: stop bits    : %s", __func__, qPrintable(stop_bits_str.value(m_stop_bits)));
-	qDebug("%s: flow control : %s", __func__, qPrintable(flow_control_str.value(m_flow_control)));
-	qDebug("%s: local echo   : %s", __func__, m_local_echo ? "on" : "off");
-	if (was_open) {
-	    open_port();
-	} else {
-	    setup_widget();
-	}
+    settings.name = m_port_name;
+    settings.baud_rate = m_baud_rate;
+    settings.data_bits = m_data_bits;
+    settings.parity = m_parity;
+    settings.stop_bits = m_stop_bits;
+    settings.flow_control = m_flow_control;
+    settings.local_echo = m_local_echo;
+    dlg.set_settings(settings);
+
+    if (QDialog::Accepted != dlg.exec())
+	return;
+
+    settings = dlg.settings();
+    if (was_open) {
+	close_port();
+    }
+    // Use the selected settings for the global serial port settings
+    m_port_name = settings.name;
+    m_baud_rate = settings.baud_rate;
+    m_parity = settings.parity;
+    m_data_bits = settings.data_bits;
+    m_stop_bits = settings.stop_bits;
+    m_flow_control = settings.flow_control;
+    m_local_echo = settings.local_echo;
+    qDebug("%s: port name    : %s", __func__, qPrintable(m_port_name));
+    qDebug("%s: baud rate    : %d", __func__, m_baud_rate);
+    qDebug("%s: parity       : %s", __func__, qPrintable(parity_str.value(m_parity)));
+    qDebug("%s: data bits    : %s", __func__, qPrintable(data_bits_str.value(m_data_bits)));
+    qDebug("%s: stop bits    : %s", __func__, qPrintable(stop_bits_str.value(m_stop_bits)));
+    qDebug("%s: flow control : %s", __func__, qPrintable(flow_control_str.value(m_flow_control)));
+    qDebug("%s: local echo   : %s", __func__, m_local_echo ? "on" : "off");
+    if (was_open) {
+	open_port();
+    } else {
+	setup_widget();
     }
 }
 
@@ -1142,17 +1159,25 @@ void QFlexProp::on_action_Configure_flexspin_triggered()
 	return;
 
     f = dlg.settings();
+    m_flexspin_binary = f.binary;
+    m_flexspin_include_paths = f.include_paths;
+    m_flexspin_optimize = f.optimize;
+    m_flexspin_listing = f.listing;
+    m_flexspin_warnings = f.warnings;
+    m_flexspin_errors = f.errors;
+    m_flexspin_hub_address = f.hub_address;
+    m_flexspin_skip_coginit = f.skip_coginit;
 
     QSettings s;
     s.beginGroup(id_grp_flexspin);
-    s.setValue(id_flexspin_binary, f.binary);
-    s.setValue(id_flexspin_include_paths, f.include_paths);
-    s.setValue(id_flexspin_optimize, f.optimize);
-    s.setValue(id_flexspin_listing, f.listing);
-    s.setValue(id_flexspin_warnings, f.warnings);
-    s.setValue(id_flexspin_errors, f.errors);
-    s.setValue(id_flexspin_hub_address, f.hub_address);
-    s.setValue(id_flexspin_skip_coginit, f.skip_coginit);
+    s.setValue(id_flexspin_binary, m_flexspin_binary);
+    s.setValue(id_flexspin_include_paths, m_flexspin_include_paths);
+    s.setValue(id_flexspin_optimize, m_flexspin_optimize);
+    s.setValue(id_flexspin_listing, m_flexspin_listing);
+    s.setValue(id_flexspin_warnings, m_flexspin_warnings);
+    s.setValue(id_flexspin_errors, m_flexspin_errors);
+    s.setValue(id_flexspin_hub_address, m_flexspin_hub_address);
+    s.setValue(id_flexspin_skip_coginit, m_flexspin_skip_coginit);
     s.endGroup();
 }
 
@@ -1166,66 +1191,7 @@ bool QFlexProp::flexspin(QString* p_p2asm, QByteArray* p_binary)
     Q_ASSERT(tb);
     tb->clear();
 
-    QString suffix;
-    switch (pe->filetype()) {
-    case FT_BASIC:
-	suffix = QStringLiteral("bas");
-	break;
-    case FT_C:
-	suffix = QStringLiteral("c");
-	break;
-    case FT_SPIN:
-	suffix = QStringLiteral("spin");
-	break;
-    case FT_SPIN2:
-	suffix = QStringLiteral("spin");
-	break;
-    case FT_PASM:
-	suffix = QStringLiteral("pasm");
-	break;
-    case FT_P2ASM:
-	suffix = QStringLiteral("p2asm");
-	break;
-    default:
-	qCritical("%s: cannot compile %s files", __func__,
-		  qPrintable(pe->filetype_name()));
-	tb->setTextColor(Qt::red);
-	tb->append(tr("Cannot compile %1 files.").arg(pe->filetype_name()));
-	return false;
-    }
-
-    QDir tmpdir = QDir(QString("%1/%2")
-		     .arg(QDir::tempPath())
-		     .arg(qApp->applicationName()));
-    if (tmpdir.exists()) {
-	qDebug("%s: using '%s' as temporary path", __func__,
-	       qPrintable(tmpdir.path()));
-    } else if (tmpdir.mkpath(tmpdir.path())) {
-	qDebug("%s: ceated '%s' as temporary path", __func__,
-	       qPrintable(tmpdir.path()));
-    } else {
-	qDebug("%s: could not ceate '%s' as temporary path", __func__,
-	       qPrintable(tmpdir.path()));
-	tb->setTextColor(Qt::red);
-	tb->append(tr("Could not create %1 as temporary path.").arg(tmpdir.path()));
-	return false;
-    }
-
-    QTemporaryFile src(QString("%1/XXXXXXXX.%2")
-		       .arg(tmpdir.path())
-		       .arg(suffix));
-    if (src.open()) {
-	QByteArray source = pe->text().toUtf8();
-	if (src.write(source) != source.length()) {
-	    qDebug("%s: failed to write %d bytes to '%s'", __func__,
-		   source.length(), qPrintable(src.fileName()));
-	    tb->setTextColor(Qt::red);
-	    tb->append(tr("Failed to write %1 bytes to '%2'.").arg(source.length()).arg(src.fileName()));
-	    return false;
-	}
-	src.close();
-    }
-
+    QFile src(pe->filename());
     QStringList args;
 
     // compile for Prop2
@@ -1285,10 +1251,7 @@ bool QFlexProp::flexspin(QString* p_p2asm, QByteArray* p_binary)
 	}
     } while (QProcess::Running == process.state());
 
-    // remove temporary source file
-    QFile::remove(src.fileName());
-
-    // check intermediate p2asm file
+    // check, load, and remove intermediate p2asm file
     QFileInfo info(src.fileName());
     QString p2asm_filename = QString("%1/%2.p2asm")
 			     .arg(info.absoluteDir().path())
@@ -1307,7 +1270,7 @@ bool QFlexProp::flexspin(QString* p_p2asm, QByteArray* p_binary)
 	p2asm.remove();
     }
 
-    // check resulting binary file
+    // check, load, and remove resulting binary file
     QString binary_filename = QString("%1/%2.binary")
 				.arg(info.absoluteDir().path())
 				.arg(info.baseName());
@@ -1356,6 +1319,7 @@ void QFlexProp::on_action_Run_triggered()
     m_transfer.lock();
     st->reset();
     PropLoad phex(m_dev, this);
+    phex.set_verbose();
     // phex.set_use_checksum(false);
     phex.setProperty(id_process_tb, QVariant::fromValue(tb));
     connect(&phex, &PropLoad::Error,

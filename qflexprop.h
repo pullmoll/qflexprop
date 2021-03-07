@@ -57,7 +57,7 @@ private slots:
     void dev_ready_read();
 
     void update_pinout(bool redo = false);
-    void tab_changed(int idex);
+    void tab_changed(int index);
 
     void load_settings();
     void save_settings();

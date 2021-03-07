@@ -43,6 +43,7 @@ public:
     ~SerialPortDlg();
 
     Settings settings();
+    void set_settings(const Settings& s);
 
 private slots:
     void show_port_info(int idx);
@@ -55,7 +56,7 @@ private:
     QString map_int(const QVariantMap& map, const QString& key, int width = 0, int base = 10, QChar fillchar = QChar(' '));
     void fill_ports_parameters();
     void fill_ports_info();
-    void setup_dialog();
+    void setup_dialog(bool load_settings = false);
     void save_settings();
     void read_settings();
 

@@ -62,6 +62,18 @@ SerialPortDlg::Settings SerialPortDlg::settings()
     return m_settings;
 }
 
+void SerialPortDlg::set_settings(const SerialPortDlg::Settings& s)
+{
+    m_settings.name = s.name;
+    m_settings.baud_rate = s.baud_rate;
+    m_settings.data_bits = s.data_bits;
+    m_settings.stop_bits = s.stop_bits;
+    m_settings.parity = s.parity;
+    m_settings.flow_control = s.flow_control;
+    m_settings.local_echo = s.local_echo;
+    setup_dialog();
+}
+
 QString SerialPortDlg::map_string(const QVariantMap& map, const QString& key)
 {
     if (map.contains(key)) {
@@ -191,14 +203,14 @@ void SerialPortDlg::fill_ports_info()
     ui->cb_ports_info->addItem(tr("Custom"));
 }
 
-void SerialPortDlg::setup_dialog()
+void SerialPortDlg::setup_dialog(bool load_settings)
 {
     QLocale locale = QLocale::system();
     QSettings s;
     Settings settings;
     int idx;
 
-    s.beginGroup(id_grp_application);
+    s.beginGroup(objectName());
     // Restore previous window geometry
     restoreGeometry(s.value(id_window_geometry).toByteArray());
     s.endGroup();
@@ -211,16 +223,19 @@ void SerialPortDlg::setup_dialog()
     }
     s.endGroup();
 
-    s.beginGroup(id_grp_serialport);
-    s.beginGroup(settings.name);
-    settings.baud_rate = static_cast<Serial_BaudRate>(s.value(id_baud_rate, Serial_Baud230400).toInt());
-    settings.data_bits = static_cast<QSerialPort::DataBits>(s.value(id_data_bits, QSerialPort::Data8).toInt());
-    settings.parity = static_cast<QSerialPort::Parity>(s.value(id_parity, QSerialPort::NoParity).toInt());
-    settings.stop_bits = static_cast<QSerialPort::StopBits>(s.value(id_stop_bits, QSerialPort::OneStop).toInt());
-    settings.flow_control = static_cast<QSerialPort::FlowControl>(s.value(id_flow_control, QSerialPort::NoFlowControl).toInt());
-    settings.local_echo = s.value(id_local_echo, false).toBool();
-    s.endGroup();
-    s.endGroup();
+    if (load_settings) {
+	s.beginGroup(id_grp_serialport);
+	s.beginGroup(settings.name);
+	settings.baud_rate = static_cast<Serial_BaudRate>(s.value(id_baud_rate, Serial_Baud230400).toInt());
+	settings.data_bits = static_cast<QSerialPort::DataBits>(s.value(id_data_bits, QSerialPort::Data8).toInt());
+	settings.parity = static_cast<QSerialPort::Parity>(s.value(id_parity, QSerialPort::NoParity).toInt());
+	settings.stop_bits = static_cast<QSerialPort::StopBits>(s.value(id_stop_bits, QSerialPort::OneStop).toInt());
+	settings.flow_control = static_cast<QSerialPort::FlowControl>(s.value(id_flow_control, QSerialPort::NoFlowControl).toInt());
+	settings.local_echo = s.value(id_local_echo, false).toBool();
+	s.endGroup();
+	s.endGroup();
+
+    }
 
     idx = ui->cb_ports_info->findText(settings.name);
     if (idx >= 0) {

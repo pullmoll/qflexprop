@@ -75,6 +75,8 @@
     <property name="title">
      <string>&amp;View</string>
     </property>
+    <addaction name="action_Show_listing"/>
+    <addaction name="action_Show_binary"/>
    </widget>
    <widget class="QMenu" name="menu_Compile">
     <property name="title">
@@ -320,6 +322,16 @@
   <action name="action_About_Qt5">
    <property name="text">
     <string>About &amp;Qt5</string>
+   </property>
+  </action>
+  <action name="action_Show_listing">
+   <property name="text">
+    <string>Show &amp;listing (P2ASM)</string>
+   </property>
+  </action>
+  <action name="action_Show_binary">
+   <property name="text">
+    <string>Show &amp;binary (DAT)</string>
    </property>
   </action>
  </widget>
