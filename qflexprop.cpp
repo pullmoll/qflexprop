@@ -38,7 +38,7 @@ QFlexProp::QFlexProp(QWidget *parent)
     , ui(new Ui::QFlexProp)
     , m_dev(nullptr)
     , m_transfer(QMutex::NonRecursive)
-    , m_fixedfont(QLatin1String("SourceCodePro"), 16, QFont::Normal, false)
+    , m_fixedfont()
     , m_leds({id_pwr, id_ri, id_dcd, id_dtr, id_dsr, id_rts, id_cts, id_txd, id_rxd, id_brk, id_fe, id_pe,})
     , m_enabled_leds({
 	{id_pwr, true  },
@@ -345,6 +345,23 @@ void QFlexProp::load_settings()
 {
     QSettings s;
     bool ok;
+
+    s.beginGroup(id_grp_application);
+    restoreGeometry(s.value(id_window_geometry).toByteArray());
+    // TODO: sane defaults?
+#if defined(Q_OS_LINUX)
+    QString font_default = QLatin1String("Monospace");
+#elif defined(Q_OS_WIN)
+    QString font_default = QLatin1String("Courier New");
+#elif defined(Q_OS_MACOS)
+    QString font_default = QLatin1String("Courier");
+#endif
+    // TODO: add preferences dialog for the font, weight and size
+    QString font_family = s.value(id_fixedfont_family, font_default).toString();
+    int font_weight = s.value(id_fixedfont_weight, QFont::Normal).toInt();
+    int font_size = s.value(id_fixedfont_size, 12).toInt();
+    s.endGroup();
+    m_fixedfont = QFont(font_family, font_size, font_weight);
 
     s.beginGroup(id_grp_serialport);
     m_port_name = s.value(id_port_name, QLatin1String("ttyUSB0")).toString();
@@ -1181,6 +1198,14 @@ void QFlexProp::on_action_Configure_flexspin_triggered()
     s.endGroup();
 }
 
+QString QFlexProp::quoted(const QString& src)
+{
+    if (src.contains(QChar::Space)) {
+	return QString("'%1'").arg(src);
+    }
+    return src;
+}
+
 bool QFlexProp::flexspin(QString* p_p2asm, QByteArray* p_binary)
 {
     PropEdit *pe = current_editor();
@@ -1198,8 +1223,10 @@ bool QFlexProp::flexspin(QString* p_p2asm, QByteArray* p_binary)
     args += QStringLiteral("-2");
 
     // append include paths
-    foreach(const QString& include_path, m_flexspin_include_paths)
-	args += QString("-I %1").arg(include_path);
+    foreach(const QString& include_path, m_flexspin_include_paths) {
+	// We need to quote paths with embedded spaces (e.g. Windows)
+	args += QString("-L %1").arg(quoted(include_path));
+    }
 
     if (m_flexspin_hub_address > 0) {
 	args += QString("-H %1").arg(m_flexspin_hub_address, 4, 16, QChar('0'));

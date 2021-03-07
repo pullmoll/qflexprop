@@ -18,6 +18,9 @@ const QLatin1String id_history("history");
 
 const QLatin1String id_grp_application("application");
 const QLatin1String id_window_geometry("window_geomtry");
+const QLatin1String id_fixedfont_family("fixedfont_family");
+const QLatin1String id_fixedfont_weight("fixedfont_weight");
+const QLatin1String id_fixedfont_size("fixedfont_size");
 
 const QLatin1String id_grp_preferences("preferences");
 #if defined(Q_OS_LINUX)

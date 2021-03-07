@@ -129,4 +129,5 @@ private:
     bool flexspin(QString* p_p2asm = nullptr, QByteArray* p_binary = nullptr);
 
     QPixmap led(const QString& type, int state);
+    static QString quoted(const QString& src);
 };

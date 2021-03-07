@@ -25,6 +25,9 @@ extern const QLatin1String id_history;
 
 extern const QLatin1String id_grp_application;
 extern const QLatin1String id_window_geometry;
+extern const QLatin1String id_fixedfont_family;
+extern const QLatin1String id_fixedfont_weight;
+extern const QLatin1String id_fixedfont_size;
 
 extern const QLatin1String id_grp_preferences;
 extern const QLatin1String id_default_com;
