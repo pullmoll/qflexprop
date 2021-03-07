@@ -82,10 +82,12 @@
     <property name="title">
      <string>&amp;Compile</string>
     </property>
-    <addaction name="action_Compile"/>
-    <addaction name="action_Upload_P2"/>
-    <addaction name="action_Run"/>
     <addaction name="action_Verbose"/>
+    <addaction name="action_Switch"/>
+    <addaction name="separator"/>
+    <addaction name="action_Build"/>
+    <addaction name="action_Upload"/>
+    <addaction name="action_Run"/>
    </widget>
    <widget class="QMenu" name="menu_Help">
     <property name="title">
@@ -272,24 +274,30 @@
     <string>Configure serial port</string>
    </property>
   </action>
-  <action name="action_Compile">
+  <action name="action_Build">
    <property name="text">
-    <string>&amp;Compile</string>
+    <string>&amp;Build</string>
+   </property>
+   <property name="toolTip">
+    <string>Build the binary from source in the selected tab</string>
    </property>
    <property name="shortcut">
-    <string>F8</string>
+    <string>Ctrl+B</string>
    </property>
   </action>
-  <action name="action_Upload_P2">
+  <action name="action_Upload">
    <property name="icon">
     <iconset resource="qflexprop.qrc">
      <normaloff>:/images/upload.png</normaloff>:/images/upload.png</iconset>
    </property>
    <property name="text">
-    <string>&amp;Upload P2</string>
+    <string>&amp;Upload</string>
+   </property>
+   <property name="toolTip">
+    <string>Upload the binary to the P2</string>
    </property>
    <property name="shortcut">
-    <string>F9</string>
+    <string>Ctrl+U</string>
    </property>
   </action>
   <action name="action_Run">
@@ -300,8 +308,11 @@
    <property name="text">
     <string>&amp;Run</string>
    </property>
+   <property name="toolTip">
+    <string>Run the binary on the P2</string>
+   </property>
    <property name="shortcut">
-    <string>F10</string>
+    <string>Ctrl+R</string>
    </property>
   </action>
   <action name="action_Toggle_80_132_columns">
@@ -346,7 +357,21 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>&amp;Verbose</string>
+    <string>&amp;Verbose upload</string>
+   </property>
+   <property name="toolTip">
+    <string>Be verbose when uploading to the P2</string>
+   </property>
+  </action>
+  <action name="action_Switch">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Switch to terminal</string>
+   </property>
+   <property name="toolTip">
+    <string>Switch to terminal after successful upload</string>
    </property>
   </action>
  </widget>

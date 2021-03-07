@@ -493,8 +493,9 @@ void QFlexProp::tab_changed(int index)
     ui->action_Show_listing->setEnabled(enable && has_listing);
     ui->action_Show_binary->setEnabled(enable && has_binary);
     ui->action_Verbose->setEnabled(enable);
-    ui->action_Compile->setEnabled(enable);
-    ui->action_Upload_P2->setEnabled(enable);
+    ui->action_Switch->setEnabled(enable);
+    ui->action_Build->setEnabled(enable);
+    ui->action_Upload->setEnabled(enable);
     ui->action_Run->setEnabled(enable);
 }
 
@@ -1250,7 +1251,7 @@ QString QFlexProp::quoted(const QString& src, const QChar quote)
     return src;
 }
 
-bool QFlexProp::flexspin(QString* p_p2asm, QByteArray* p_binary)
+bool QFlexProp::flexspin(QByteArray* p_binary, QString* p_p2asm)
 {
     PropEdit *pe = current_editor();
     if (!pe) {
@@ -1364,19 +1365,19 @@ bool QFlexProp::flexspin(QString* p_p2asm, QByteArray* p_binary)
     return true;
 }
 
-void QFlexProp::on_action_Compile_triggered()
+void QFlexProp::on_action_Build_triggered()
 {
     flexspin();
 }
 
-void QFlexProp::on_action_Upload_P2_triggered()
+void QFlexProp::on_action_Upload_triggered()
 {
     PropEdit* pe = current_editor();
     Q_ASSERT(pe);
     QByteArray binary = pe->property(id_tab_binary).toByteArray();
     if (binary.isEmpty()) {
 	// Need to compile first
-	flexspin(nullptr, &binary);
+	flexspin(&binary);
     }
 }
 
@@ -1388,7 +1389,10 @@ void QFlexProp::on_action_Run_triggered()
     Q_ASSERT(tb);
 
     QByteArray binary;
-    flexspin(nullptr, &binary);
+    flexspin(&binary);
+
+    if (binary.isEmpty())
+	return;
 
     m_transfer.lock();
     st->reset();
@@ -1402,6 +1406,10 @@ void QFlexProp::on_action_Run_triggered()
 	    this, &QFlexProp::printMessage);
     phex.load_file(binary);
     m_transfer.unlock();
+    if (ui->action_Switch->isChecked()) {
+	// Select the terminal tab
+	ui->tabWidget->setCurrentIndex(ui->tabWidget->count() - 1);
+    }
 }
 
 void QFlexProp::on_action_About_triggered()

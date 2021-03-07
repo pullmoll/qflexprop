@@ -88,8 +88,8 @@ private slots:
     void on_action_Show_listing_triggered();
     void on_action_Show_binary_triggered();
 
-    void on_action_Compile_triggered();
-    void on_action_Upload_P2_triggered();
+    void on_action_Build_triggered();
+    void on_action_Upload_triggered();
     void on_action_Run_triggered();
 
     void on_action_About_triggered();
@@ -131,7 +131,7 @@ private:
     QString load_file(const QString& title);
     QString save_file(const QString& filename, const QString& title);
 
-    bool flexspin(QString* p_p2asm = nullptr, QByteArray* p_binary = nullptr);
+    bool flexspin(QByteArray* p_binary = nullptr, QString* p_p2asm = nullptr);
 
     QPixmap led(const QString& type, int state);
     static QString quoted(const QString& src, const QChar quote = QChar('"'));
