@@ -26,7 +26,7 @@ public:
 	bool listing;
 	bool warnings;
 	bool errors;
-	quint32 hubaddress;
+	quint32 hub_address;
 	bool skip_coginit;
     };
 

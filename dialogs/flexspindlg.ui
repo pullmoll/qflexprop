@@ -64,7 +64,7 @@
      <property name="font">
       <font>
        <family>Monospace</family>
-       <pointsize>12</pointsize>
+       <pointsize>10</pointsize>
        <weight>75</weight>
        <bold>true</bold>
       </font>
@@ -76,7 +76,7 @@
      <property name="font">
       <font>
        <family>Monospace</family>
-       <pointsize>12</pointsize>
+       <pointsize>10</pointsize>
        <weight>75</weight>
        <bold>true</bold>
       </font>
@@ -132,7 +132,7 @@
      <property name="font">
       <font>
        <family>Monospace</family>
-       <pointsize>12</pointsize>
+       <pointsize>10</pointsize>
        <weight>75</weight>
        <bold>true</bold>
       </font>
@@ -144,7 +144,7 @@
      <property name="font">
       <font>
        <family>Monospace</family>
-       <pointsize>12</pointsize>
+       <pointsize>10</pointsize>
        <weight>75</weight>
        <bold>true</bold>
       </font>
@@ -224,7 +224,14 @@
     </widget>
    </item>
    <item row="8" column="1">
-    <widget class="QLineEdit" name="le_hubaddress"/>
+    <widget class="QLineEdit" name="le_hubaddress">
+     <property name="font">
+      <font>
+       <family>Monospace</family>
+       <pointsize>10</pointsize>
+      </font>
+     </property>
+    </widget>
    </item>
   </layout>
  </widget>

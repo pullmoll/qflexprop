@@ -87,6 +87,9 @@ private slots:
     void on_action_Upload_P2_triggered();
     void on_action_Run_triggered();
 
+    void on_action_About_triggered();
+    void on_action_About_Qt5_triggered();
+
     void channelReadyRead(int channel);
     void printError(const QString& message);
     void printMessage(const QString& message);

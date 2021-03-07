@@ -42,7 +42,10 @@ SerialPortDlg::SerialPortDlg(QWidget *parent)
     fill_ports_parameters();
     fill_ports_info();
 
-    adjustSize();
+    QSettings s;
+    s.beginGroup(objectName());
+    restoreGeometry(s.value(id_window_geometry).toByteArray());
+    s.endGroup();
 }
 
 SerialPortDlg::~SerialPortDlg()
@@ -195,10 +198,15 @@ void SerialPortDlg::setup_dialog()
     Settings settings;
     int idx;
 
+    s.beginGroup(id_grp_application);
+    // Restore previous window geometry
+    restoreGeometry(s.value(id_window_geometry).toByteArray());
+    s.endGroup();
+
     s.beginGroup(id_grp_preferences);
     if (settings.name.isEmpty()) {
 	s.beginGroup(id_default);
-	settings.name = s.value(id_name, QLatin1String("ttyUSB0")).toString();
+	settings.name = s.value(id_name, id_default_com).toString();
 	s.endGroup();
     }
     s.endGroup();
@@ -258,10 +266,15 @@ void SerialPortDlg::setup_dialog()
 void SerialPortDlg::save_settings()
 {
     QSettings s;
+    s.beginGroup(objectName());
+    s.setValue(id_window_geometry, saveGeometry());
+    s.endGroup();
+
     s.beginGroup(id_grp_preferences);
     s.beginGroup(id_default);
     s.setValue(id_name, m_settings.name);
     s.endGroup();
+
     s.beginGroup(m_settings.name);
     s.setValue(id_baud_rate, m_settings.baud_rate);
     s.setValue(id_data_bits, m_settings.data_bits);

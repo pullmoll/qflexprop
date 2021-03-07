@@ -16,7 +16,17 @@ const QLatin1String id_sourcedir("sourcedir");
 const QLatin1String id_filename("filename");
 const QLatin1String id_history("history");
 
+const QLatin1String id_grp_application("application");
+const QLatin1String id_window_geometry("window_geomtry");
+
 const QLatin1String id_grp_preferences("preferences");
+#if defined(Q_OS_LINUX)
+const QLatin1String id_default_com("ttyUSB0");
+#elif defined(Q_OS_WIN)
+const QLatin1String id_default_com("COM3");
+#elif defined(Q_OS_MACOS)
+const QLatin1String id_default_com("cu.usb0");
+#endif
 const QLatin1String id_default("default");
 const QLatin1String id_name("name");
 const QLatin1String id_baud_rate("baud_rate");
@@ -59,7 +69,14 @@ const QLatin1String id_download_path("downloads");
 
 const QLatin1String str_unknown("?");
 
+#if defined(Q_OS_LINUX)
 const QLatin1String p2tools_path("/usr/libexec/p2tools");
+#elif defined(Q_OS_WIN)
+const QLatin1String p2tools_path("C:/Program Files (x86)/p2tools");
+#elif defined(Q_OS_MACOS)
+// FIXME: what is the default install path for the p2tools on MacOS?
+const QLatin1String p2tools_path("");
+#endif
 const QLatin1String id_grp_flexspin("flexspin");
 const QLatin1String id_flexspin_binary("binary");
 const QLatin1String id_flexspin_include_paths("include_paths");

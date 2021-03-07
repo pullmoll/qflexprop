@@ -23,7 +23,11 @@ extern const QLatin1String id_sourcedir;
 extern const QLatin1String id_filename;
 extern const QLatin1String id_history;
 
+extern const QLatin1String id_grp_application;
+extern const QLatin1String id_window_geometry;
+
 extern const QLatin1String id_grp_preferences;
+extern const QLatin1String id_default_com;
 extern const QLatin1String id_default;
 extern const QLatin1String id_name;
 extern const QLatin1String id_baud_rate;

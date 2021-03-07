@@ -20,12 +20,22 @@ FlexspinDlg::FlexspinDlg(QWidget *parent) :
     ui(new Ui::FlexspinDlg)
 {
     ui->setupUi(this);
+    QSettings s;
+    s.beginGroup(objectName());
+    restoreGeometry(s.value(id_window_geometry).toByteArray());
+    s.endGroup();
 
     setup_connections();
 }
 
 FlexspinDlg::~FlexspinDlg()
 {
+    if (QDialog::Accepted == result()) {
+	QSettings s;
+	s.beginGroup(objectName());
+	s.setValue(id_window_geometry, saveGeometry());
+	s.endGroup();
+    }
     delete ui;
 }
 
@@ -45,9 +55,9 @@ FlexspinDlg::Settings FlexspinDlg::settings() const
     s.listing = ui->cb_listing->isChecked();
     s.warnings = ui->cb_warnings->isChecked();
     s.errors = ui->cb_errors->isChecked();
-    s.hubaddress = ui->le_hubaddress->text().toUInt(&ok, 16);
+    s.hub_address = ui->le_hubaddress->text().toUInt(&ok, 16);
     if (!ok)
-	s.hubaddress = 0;
+	s.hub_address = 0;
     s.skip_coginit = ui->cb_skip_coginit->isChecked();
     return s;
 }
@@ -62,9 +72,9 @@ void FlexspinDlg::set_settings(const FlexspinDlg::Settings& s)
     ui->cb_listing->setChecked(s.listing);
     ui->cb_warnings->setChecked(s.warnings);
     ui->cb_errors->setChecked(s.errors);
-    ui->le_hubaddress->setText(QString("%1").arg(s.hubaddress, 4, 16, QChar('0')));
+    ui->le_hubaddress->setText(QString("%1").arg(s.hub_address, 4, 16, QChar('0')));
     ui->cb_skip_coginit->setChecked(s.skip_coginit);
-    ui->cb_skip_coginit->setEnabled(s.hubaddress > 0);
+    ui->cb_skip_coginit->setEnabled(s.hub_address > 0);
     setup_dialog();
 }
 

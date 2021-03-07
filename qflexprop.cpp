@@ -26,6 +26,7 @@
 #include "idstrings.h"
 #include "propedit.h"
 #include "qflexprop.h"
+#include "aboutdlg.h"
 #include "ui_qflexprop.h"
 #include "flexspindlg.h"
 #include "serterm.h"
@@ -378,6 +379,13 @@ void QFlexProp::load_settings()
 void QFlexProp::save_settings()
 {
     QSettings s;
+
+
+    s.beginGroup(id_grp_application);
+    // Save window geometry
+    s.setValue(id_window_geometry, saveGeometry());
+    s.endGroup();
+
     s.beginGroup(id_grp_serialport);
     s.setValue(id_port_name, m_port_name);
     s.beginGroup(m_port_name);
@@ -1122,8 +1130,10 @@ void QFlexProp::on_action_Configure_flexspin_triggered()
     f.binary = m_flexspin_binary;
     f.include_paths = m_flexspin_include_paths;
     f.optimize = m_flexspin_optimize;
+    f.listing = m_flexspin_listing;
     f.warnings = m_flexspin_warnings;
     f.errors = m_flexspin_errors;
+    f.hub_address = m_flexspin_hub_address;
     f.skip_coginit = m_flexspin_skip_coginit;
     dlg.set_settings(f);
 
@@ -1138,8 +1148,10 @@ void QFlexProp::on_action_Configure_flexspin_triggered()
     s.setValue(id_flexspin_binary, f.binary);
     s.setValue(id_flexspin_include_paths, f.include_paths);
     s.setValue(id_flexspin_optimize, f.optimize);
+    s.setValue(id_flexspin_listing, f.listing);
     s.setValue(id_flexspin_warnings, f.warnings);
     s.setValue(id_flexspin_errors, f.errors);
+    s.setValue(id_flexspin_hub_address, f.hub_address);
     s.setValue(id_flexspin_skip_coginit, f.skip_coginit);
     s.endGroup();
 }
@@ -1352,6 +1364,17 @@ void QFlexProp::on_action_Run_triggered()
 	    this, &QFlexProp::printMessage);
     phex.load_file(binary);
     m_transfer.unlock();
+}
+
+void QFlexProp::on_action_About_triggered()
+{
+    AboutDlg dlg(this);
+    dlg.exec();
+}
+
+void QFlexProp::on_action_About_Qt5_triggered()
+{
+    qApp->aboutQt();
 }
 
 void QFlexProp::channelReadyRead(int channel)
