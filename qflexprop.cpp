@@ -822,7 +822,9 @@ void QFlexProp::open_port()
 	} else {
 	    qDebug("%s: failed to %s", __func__, qPrintable(m_stty_operation));
 	}
-    } else do {
+    }
+#if defined(Q_OS_LINUX)
+    else do {
 	int fdm = ::open(m_port_name.toLatin1().constData(), O_RDWR);
 	if (fdm < 0) {
 	    log_error(tr("Could not open device %1: %2")
@@ -860,6 +862,7 @@ void QFlexProp::open_port()
 	}
 	break;
     } while (0);
+#endif
 
     setup_widget();
     update_parity_data_stop();
