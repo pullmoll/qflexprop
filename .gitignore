@@ -5,3 +5,8 @@
 # Generated listings and binaries
 *.binary
 *.lst
+*.bak
+
+# Doxygen log and output
+doc/*
+doxygen.log
