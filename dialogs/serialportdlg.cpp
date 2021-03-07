@@ -215,15 +215,15 @@ void SerialPortDlg::setup_dialog(bool load_settings)
     restoreGeometry(s.value(id_window_geometry).toByteArray());
     s.endGroup();
 
-    s.beginGroup(id_grp_preferences);
-    if (settings.name.isEmpty()) {
-	s.beginGroup(id_default);
-	settings.name = s.value(id_name, id_default_com).toString();
-	s.endGroup();
-    }
-    s.endGroup();
-
     if (load_settings) {
+	s.beginGroup(id_grp_preferences);
+	if (settings.name.isEmpty()) {
+	    s.beginGroup(id_default);
+	    settings.name = s.value(id_name, id_default_com).toString();
+	    s.endGroup();
+	}
+	s.endGroup();
+
 	s.beginGroup(id_grp_serialport);
 	s.beginGroup(settings.name);
 	settings.baud_rate = static_cast<Serial_BaudRate>(s.value(id_baud_rate, Serial_Baud230400).toInt());
@@ -234,7 +234,8 @@ void SerialPortDlg::setup_dialog(bool load_settings)
 	settings.local_echo = s.value(id_local_echo, false).toBool();
 	s.endGroup();
 	s.endGroup();
-
+    } else {
+	settings = m_settings;
     }
 
     idx = ui->cb_ports_info->findText(settings.name);
@@ -242,8 +243,7 @@ void SerialPortDlg::setup_dialog(bool load_settings)
 	ui->cb_ports_info->setCurrentIndex(idx);
     }
 
-    const QString baud_str = locale.toString(settings.baud_rate);
-    idx = ui->cb_baud_rate->findData(baud_str);
+    idx = ui->cb_baud_rate->findData(settings.baud_rate);
     if (idx >= 0) {
 	ui->cb_baud_rate->setCurrentIndex(idx);
     } else {
@@ -268,6 +268,7 @@ void SerialPortDlg::setup_dialog(bool load_settings)
 
     ui->cb_local_echo->setChecked(settings.local_echo);
 
+    // Create human readable strings from the settings
     settings.str.baud_rate = locale.toString(settings.baud_rate);
     settings.str.data_bits = data_bits_str.value(settings.data_bits);
     settings.str.parity = parity_str.value(settings.parity);
