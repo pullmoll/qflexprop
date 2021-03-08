@@ -85,6 +85,7 @@ public slots:
     void display_maps();
     void set_font_family(const QString& family);
     void set_zoom(int percent);
+    void cursor_slot();
 
 protected:
     bool event(QEvent* event) override;

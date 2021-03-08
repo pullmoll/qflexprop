@@ -17,6 +17,7 @@ vtScrollArea::vtScrollArea(QWidget* parent)
 {
     setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
     setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+    setAlignment(Qt::AlignHCenter | Qt::AlignTop);
 }
 
 QSize vtScrollArea::sizeHint() const

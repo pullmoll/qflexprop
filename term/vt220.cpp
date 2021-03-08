@@ -146,6 +146,17 @@ void vt220::set_zoom(int percent)
     term_set_size(m_width, m_height);
 }
 
+void vt220::cursor_slot()
+{
+    const vtLine& pl = m_screen[m_cursor.y];
+    const int bh = m_backlog.size();
+    const int x = m_cursor.newx * m_font_w;
+    const int y = (bh + m_cursor.y) * m_font_h;
+    const int w = m_font_w * pl.decdwl();
+    const int h = m_font_h * pl.decdhl();
+    emit UpdateCursor(QRect(x, y, w, h));
+}
+
 QSize vt220::term_geometry() const
 {
     return QSize(m_font_w * m_width,
@@ -410,13 +421,8 @@ void vt220::set_newx(int newx)
     }
 
     set_cursor(m_cursor.on);
-    const vtLine& pl = m_screen[m_cursor.y];
-    const int bh = m_backlog.size();
-    const int x = m_cursor.newx * m_font_w;
-    const int y = (bh + m_cursor.y) * m_font_h;
-    const int w = m_font_w * pl.decdwl();
-    const int h = m_font_h * pl.decdhl();
-    emit UpdateCursor(QRect(x, y, w, h));
+    // Update the cursor after message queue is processed
+    QTimer::singleShot(0, this, &vt220::cursor_slot);
 }
 
 /**
