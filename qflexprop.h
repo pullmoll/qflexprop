@@ -41,16 +41,16 @@ private slots:
     void log_status(const QString& message = QString(), bool icon = false);
     void log_error(const QString& message = QString(), bool icon = true);
 
-    void update_baud_rate(qint32 baudRate, QSerialPort::Directions directions = QSerialPort::AllDirections);
+    void update_baud_rate();
     void update_parity_data_stop();
-    void update_data_bits(QSerialPort::DataBits dataBits);
-    void update_parity(QSerialPort::Parity parity);
-    void update_stop_bits(QSerialPort::StopBits stopBits);
+    void update_data_bits();
+    void update_parity();
+    void update_stop_bits();
+    void update_flow_control();
     void update_dtr(bool set);
     void update_rts(bool set);
     void error_occured(QSerialPort::SerialPortError error);
     void update_break_enable(bool set);
-    void update_flow_control(QSerialPort::FlowControl flowctl);
 
     void dev_close();
     void dev_write_data(const QByteArray& data);
@@ -88,6 +88,8 @@ private slots:
     void on_action_Show_listing_triggered();
     void on_action_Show_binary_triggered();
 
+    void on_action_Verbose_upload_triggered();
+    void on_action_Switch_to_term_triggered();
     void on_action_Build_triggered();
     void on_action_Upload_triggered();
     void on_action_Run_triggered();
@@ -104,7 +106,6 @@ private slots:
 private:
     Ui::QFlexProp *ui;
     QIODevice* m_dev;				//!< serial port (or tty)
-    QMutex m_transfer;				//!< held while in file transfer
     QFont m_fixedfont;
     QStringList m_leds;				//!< list of LED names
     QHash<QString,bool> m_enabled_leds;		//!< hash of LED enabled (visible) status

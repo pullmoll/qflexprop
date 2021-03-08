@@ -40,7 +40,6 @@ QFlexProp::QFlexProp(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::QFlexProp)
     , m_dev(nullptr)
-    , m_transfer(QMutex::NonRecursive)
     , m_fixedfont()
     , m_leds({id_pwr, id_ri, id_dcd, id_dtr, id_dsr, id_rts, id_cts, id_txd, id_rxd, id_brk, id_fe, id_pe,})
     , m_enabled_leds({
@@ -276,16 +275,10 @@ void QFlexProp::setup_signals()
 void QFlexProp::dev_ready_read()
 {
 
-    if (m_transfer.tryLock()) {
-	qint64 avail = m_dev->bytesAvailable();
-	QByteArray data = m_dev->read(avail);
-	DBG_DATA("%s: recv %d bytes\n%s", __func__, data.length(),
-		 qPrintable(util.dump(__func__, data)));
-	ui->terminal->write(data);
-	m_transfer.unlock();
-    } else {
-	DBG_DATA("%s: ignored for transfer", __func__);
-    }
+    QByteArray data = m_dev->readAll();
+    DBG_DATA("%s: recv %d bytes\n%s", __func__, data.length(),
+	     qPrintable(util.dump(__func__, data)));
+    ui->terminal->write(data);
     update_pinout(true);
 }
 
@@ -420,9 +413,6 @@ void QFlexProp::save_settings()
     s.endGroup();
     s.endGroup();
 
-    m_compile_verbose_upload = ui->action_Verbose_upload->isChecked();
-    m_compile_switch_to_term = ui->action_Switch_to_term->isChecked();
-
     s.beginGroup(id_grp_flexspin);
     s.setValue(id_flexspin_binary, m_flexspin_binary);
     s.setValue(id_flexspin_include_paths, m_flexspin_include_paths);
@@ -487,15 +477,12 @@ void QFlexProp::update_pinout(bool redo)
 	if (m_labels.contains(id_pe)) {
 	    m_labels[id_pe]->setPixmap(led(id_pe, QSerialPort::ParityError == err ? red : off));
 	}
-
-	if (redo) {
-	    update_baud_rate(stty->baudRate(), QSerialPort::AllDirections);
-	    update_parity_data_stop();
-	    update_flow_control(stty->flowControl());
-	    QTimer::singleShot(5, this, SLOT(update_pinout()));
-	}
-    } else if (redo) {
-	QTimer::singleShot(5, this, SLOT(update_pinout()));
+    }
+    if (redo) {
+	update_baud_rate();
+	update_parity_data_stop();
+	update_flow_control();
+	QTimer::singleShot(25, this, SLOT(dev_ready_read()));
     }
 }
 
@@ -561,16 +548,21 @@ void QFlexProp::log_error(const QString& message, bool icon)
     loop.processEvents();
 }
 
-void QFlexProp::update_baud_rate(qint32 baudRate, QSerialPort::Directions directions)
+void QFlexProp::update_baud_rate()
 {
     if (!m_labels.contains(id_baud_rate))
 	return;
 
-    QLocale locale = QLocale::system();
-    QLabel* lbl_baud = m_labels[id_baud_rate];
-    QString baud = locale.toString(baudRate);
-    QString dir = direction_str.value(directions);
-    lbl_baud->setText(QString("%1%2").arg(dir).arg(baud));
+    QSerialPort* stty = qobject_cast<QSerialPort*>(m_dev);
+    if (stty) {
+	QSerialPort::Directions directions = stty->AllDirections;
+	qint32 baud_rate = stty->baudRate(directions);
+	QLocale locale = QLocale::system();
+	QLabel* lbl_baud = m_labels[id_baud_rate];
+	QString baud = locale.toString(baud_rate);
+	QString dir = direction_str.value(directions);
+	lbl_baud->setText(QString("%1%2").arg(dir).arg(baud));
+    }
 }
 
 void QFlexProp::update_parity_data_stop()
@@ -593,19 +585,32 @@ void QFlexProp::update_parity_data_stop()
     }
 }
 
-void QFlexProp::update_data_bits(QSerialPort::DataBits)
+void QFlexProp::update_data_bits()
 {
     update_parity_data_stop();
 }
 
-void QFlexProp::update_parity(QSerialPort::Parity)
+void QFlexProp::update_parity()
 {
     update_parity_data_stop();
 }
 
-void QFlexProp::update_stop_bits(QSerialPort::StopBits)
+void QFlexProp::update_stop_bits()
 {
     update_parity_data_stop();
+}
+
+void QFlexProp::update_flow_control()
+{
+    if (!m_labels.contains(id_flow_control))
+	return;
+    QSerialPort* stty = qobject_cast<QSerialPort*>(m_dev);
+    if (stty) {
+	QSerialPort::FlowControl flow_control = stty->flowControl();
+	QLabel* lbl_flow = m_labels[id_flow_control];
+	lbl_flow->setText(flow_ctrl_str.value(flow_control));
+	lbl_flow->setToolTip(flow_ctrl_tooltip.value(flow_control));
+    }
 }
 
 void QFlexProp::update_dtr(bool set)
@@ -678,15 +683,6 @@ void QFlexProp::update_break_enable(bool set)
 {
     Q_UNUSED(set)
     update_pinout(true);
-}
-
-void QFlexProp::update_flow_control(QSerialPort::FlowControl flow_control)
-{
-    if (!m_labels.contains(id_flow_control))
-	return;
-    QLabel* lbl_flow = m_labels[id_flow_control];
-    lbl_flow->setText(flow_ctrl_str.value(flow_control));
-    lbl_flow->setToolTip(flow_ctrl_tooltip.value(flow_control));
 }
 
 void QFlexProp::setup_statusbar()
@@ -1272,6 +1268,16 @@ void QFlexProp::on_action_Show_binary_triggered()
     dlg.exec();
 }
 
+void QFlexProp::on_action_Verbose_upload_triggered()
+{
+    m_compile_verbose_upload = ui->action_Verbose_upload->isChecked();
+}
+
+void QFlexProp::on_action_Switch_to_term_triggered()
+{
+    m_compile_switch_to_term = ui->action_Switch_to_term->isChecked();
+}
+
 QString QFlexProp::quoted(const QString& src, const QChar quote)
 {
     if (src.contains(QChar::Space))
@@ -1457,12 +1463,13 @@ void QFlexProp::on_action_Run_triggered()
     if (binary.isEmpty())
 	return;
 
-    m_transfer.lock();
+    disconnect(m_dev, &QSerialPort::readyRead,
+	       this, &QFlexProp::dev_ready_read);
     st->reset();
     PropLoad propload(m_dev, this);
     // base64 encoding fails with checksum
     // propload.set_mode(PropLoad::Prop_Txt);
-    propload.set_verbose(ui->action_Verbose_upload->isChecked());
+    propload.set_verbose(m_compile_verbose_upload);
     // phex.set_use_checksum(false);
     propload.setProperty(id_process_tb, QVariant::fromValue(tb));
     connect(&propload, &PropLoad::Error,
@@ -1472,10 +1479,13 @@ void QFlexProp::on_action_Run_triggered()
     connect(&propload, &PropLoad::Progress,
 	    this, &QFlexProp::Progress);
     propload.load_file(binary);
-    m_transfer.unlock();
-    if (ui->action_Switch_to_term->isChecked()) {
+    connect(m_dev, &QSerialPort::readyRead,
+	    this, &QFlexProp::dev_ready_read,
+	    Qt::UniqueConnection);
+    if (m_compile_switch_to_term) {
 	// Select the terminal tab
-	tab_changed(ui->tabWidget->count() - 1);
+	ui->tabWidget->setCurrentWidget(ui->terminal);
+	ui->terminal->setFocus();
     }
     // Process data which may have been received while signal handling was blocked
     if (m_dev->bytesAvailable() > 0) {
