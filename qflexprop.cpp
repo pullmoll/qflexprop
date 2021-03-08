@@ -18,6 +18,7 @@
 #include <QCryptographicHash>
 #include <QScrollArea>
 #include <QSplitter>
+#include <QLineEdit>
 #include <QProgressBar>
 #include <QTextBrowser>
 #include <QVBoxLayout>
@@ -79,14 +80,14 @@ QFlexProp::QFlexProp(QWidget *parent)
 {
     ui->setupUi(this);
 
-    setup_widget();
+    setup_mainwindow();
     setup_statusbar();
     load_settings();
     setup_port();
     setup_signals();
     tab_changed(0);
 
-    QTimer::singleShot(100, this, &QFlexProp::open_port);
+    QTimer::singleShot(100, this, &QFlexProp::configure_port);
 }
 
 QFlexProp::~QFlexProp()
@@ -96,16 +97,16 @@ QFlexProp::~QFlexProp()
 }
 
 /**
- * @brief Return a pointer to the currently active propEdit in the tab widget
- * @return pointer to propEdit or nullptr if none selection
+ * @brief Return a pointer to the currently active PropEdit in the tab widget
+ * @return pointer to propEdit or nullptr if there is none in the selected tab
  */
-PropEdit* QFlexProp::current_editor() const
+PropEdit* QFlexProp::current_editor(int index) const
 {
-    const int curtab = ui->tabWidget->currentIndex();
-    QWidget *wdg = ui->tabWidget->widget(curtab);
+    const int tabidx = index < 0 ? ui->tabWidget->currentIndex() : index;
+    QWidget *wdg = ui->tabWidget->widget(tabidx);
     if (!wdg) {
 	qCritical("%s: current tab %d has no widget?", __func__,
-	       curtab);
+	       tabidx);
 	return nullptr;
     }
 
@@ -113,27 +114,31 @@ PropEdit* QFlexProp::current_editor() const
     PropEdit *pe = wdg->findChild<PropEdit *>(QLatin1String("pe"));
     if (!pe) {
 	qDebug("%s: current tab %d has no PropEdit '%s'?", __func__,
-	       curtab, qPrintable(QLatin1String("pe")));
+	       tabidx, qPrintable(QLatin1String("pe")));
 	return nullptr;
     }
 
     return pe;
 }
 
-QTextBrowser* QFlexProp::current_browser() const
+/**
+ * @brief Return a pointer to the currently active QTextBrowser in the tab widget
+ * @return pointer to QTextBrowser or nullptr if there is none in the selected tab
+ */
+QTextBrowser* QFlexProp::current_browser(int index) const
 {
-    const int curtab = ui->tabWidget->currentIndex();
-    QWidget *wdg = ui->tabWidget->widget(curtab);
+    const int tabidx = index < 0 ? ui->tabWidget->currentIndex() : index;
+    QWidget *wdg = ui->tabWidget->widget(tabidx);
     if (!wdg) {
 	qDebug("%s: current tab %d has no widget?", __func__,
-	       curtab);
+	       tabidx);
 	return nullptr;
     }
 
     QTextBrowser *tb = wdg->findChild<QTextBrowser *>(QLatin1String("tb"));
     if (!tb) {
 	qDebug("%s: current tab %d has no text browser '%s'?", __func__,
-	       curtab, qPrintable(QLatin1String("tb")));
+	       tabidx, qPrintable(QLatin1String("tb")));
 	return nullptr;
     }
     return tb;
@@ -240,7 +245,10 @@ QString QFlexProp::save_file(const QString& filename, const QString& title)
     return save_filename;
 }
 
-void QFlexProp::setup_widget()
+/**
+ * @brief Setup the main window title
+ */
+void QFlexProp::setup_mainwindow()
 {
     QString title = QString("%1 %2")
 		    .arg(qApp->applicationName())
@@ -258,6 +266,9 @@ void QFlexProp::setup_widget()
     log_message(title);
 }
 
+/**
+ * @brief Setup the one time signals connection the SerTerm and QMainWindow
+ */
 void QFlexProp::setup_signals()
 {
     SerTerm* st = ui->tabWidget->findChild<SerTerm*>(id_terminal);
@@ -270,8 +281,13 @@ void QFlexProp::setup_signals()
 	    Qt::UniqueConnection);
     connect(ui->tabWidget, &QTabWidget::currentChanged,
 	    this, &QFlexProp::tab_changed);
+    connect(ui->tabWidget, &QTabWidget::tabCloseRequested,
+	    this, &QFlexProp::tab_close_requested);
 }
 
+/**
+ * @brief Slot called when the serial device has data to be read
+ */
 void QFlexProp::dev_ready_read()
 {
 
@@ -285,18 +301,26 @@ void QFlexProp::dev_ready_read()
     }
 }
 
+/**
+ * @brief Close the serial device and destroy it
+ */
 void QFlexProp::dev_close()
 {
     SerTerm* st = ui->tabWidget->findChild<SerTerm*>(id_terminal);
     Q_ASSERT(st != nullptr);
     if (m_dev) {
 	qDebug("%s: deleting m_dev", __func__);
+	m_dev->close();
 	m_dev->deleteLater();
 	m_dev = nullptr;
 	st->set_device(m_dev);
     }
 }
 
+/**
+ * @brief Write data to the serial device
+ * @param data
+ */
 void QFlexProp::dev_write_data(const QByteArray& data)
 {
     Q_ASSERT(m_dev);
@@ -304,6 +328,12 @@ void QFlexProp::dev_write_data(const QByteArray& data)
     m_dev->write(data);
 }
 
+/**
+ * @brief Return a LED image for a specific @p state
+ * @param type string constant with type name (dcd, dsr, dtr, ...)
+ * @param state LED state (off, red, green, yellow)
+ * @return QPixmap with the LED scaled to 16x16 pixels
+ */
 QPixmap QFlexProp::led(const QString& type, int state)
 {
     // This is how the led_*.png resource images are laid out
@@ -327,6 +357,9 @@ QPixmap QFlexProp::led(const QString& type, int state)
     return led.scaled(16, 16, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
 }
 
+/**
+ * @brief Load the previous settings of the application, serialport, and flexspin
+ */
 void QFlexProp::load_settings()
 {
     QSettings s;
@@ -388,6 +421,9 @@ void QFlexProp::load_settings()
     ui->action_Switch_to_term->setChecked(m_compile_switch_to_term);
 }
 
+/**
+ * @brief Save the settings for the application, serialport, and flexspin
+ */
 void QFlexProp::save_settings()
 {
     QSettings s;
@@ -431,6 +467,10 @@ void QFlexProp::save_settings()
     s.endGroup();
 }
 
+/**
+ * @brief Update the statusbar items and LEDs for the current signal states
+ * @param redo if true, redo this update after 25 milliseconds
+ */
 void QFlexProp::update_pinout(bool redo)
 {
     static const int off = 0;
@@ -490,10 +530,14 @@ void QFlexProp::update_pinout(bool redo)
     }
 }
 
+/**
+ * @brief Slot is called when the tab widget's tab (page) is changed
+ * @param index zero based index of the tab
+ */
 void QFlexProp::tab_changed(int index)
 {
     Q_UNUSED(index)
-    const PropEdit* pe = current_editor();
+    const PropEdit* pe = current_editor(index);
     const bool enable = pe != nullptr;
     const bool has_listing = pe && !pe->property(id_tab_p2asm).isNull();
     const bool has_binary = pe && !pe->property(id_tab_binary).isNull();
@@ -510,6 +554,30 @@ void QFlexProp::tab_changed(int index)
     }
 }
 
+void QFlexProp::tab_close_requested(int index)
+{
+    PropEdit* pe = current_editor(index);
+    if (!pe)
+	return;
+    if (pe->changed()) {
+	int res = QMessageBox::information(this,
+					   tr("File '%1' changed!").arg(pe->filename()),
+					   tr("The file '%1' was modified. Do you want to save it before closing the tab?").arg(pe->filename()),
+					   QMessageBox::Yes, QMessageBox::No, QMessageBox::Cancel);
+	if (res == QMessageBox::Cancel) {
+	    return;
+	}
+	if (res == QMessageBox::Yes) {
+	    pe->save(pe->filename());
+	}
+    }
+    ui->tabWidget->removeTab(index);
+}
+
+/**
+ * @brief Log a message to the statusbar's QComboBox
+ * @param message text to log
+ */
 void QFlexProp::log_message(const QString& message)
 {
     QEventLoop loop(this);
@@ -517,8 +585,14 @@ void QFlexProp::log_message(const QString& message)
     loop.processEvents();
 }
 
+/**
+ * @brief Log a status message to the statusbar's QComboBox
+ * @param message text to log
+ * @param icon if true, display the status icon next to the message
+ */
 void QFlexProp::log_status(const QString& message, bool icon)
 {
+    QEventLoop loop(this);
     QComboBox* cb_status = ui->statusbar->findChild<QComboBox*>(id_status);
     if (!cb_status) {
 	qDebug("%s: %s", __func__, qPrintable(message));
@@ -530,12 +604,17 @@ void QFlexProp::log_status(const QString& message, bool icon)
 	cb_status->setItemData(index, QIcon(":/images/status.png"), Qt::DecorationRole);
     }
     cb_status->setCurrentIndex(index);
-    QEventLoop loop(this);
     loop.processEvents();
 }
 
+/**
+ * @brief Log an error message to the statusbar's QComboBox
+ * @param message text to log
+ * @param icon if true, display the error icon next to the message
+ */
 void QFlexProp::log_error(const QString& message, bool icon)
 {
+    QEventLoop loop(this);
     QComboBox* cb_status = ui->statusbar->findChild<QComboBox*>(id_status);
     if (!cb_status) {
 	qDebug("%s: %s", __func__, qPrintable(message));
@@ -548,10 +627,12 @@ void QFlexProp::log_error(const QString& message, bool icon)
     }
     cb_status->setItemData(index, QColor(qRgb(0xff,0x40,0x00)), Qt::ForegroundRole);
     cb_status->setCurrentIndex(index);
-    QEventLoop loop(this);
     loop.processEvents();
 }
 
+/**
+ * @brief Update the baud rate display in the statusbar
+ */
 void QFlexProp::update_baud_rate()
 {
     if (!m_labels.contains(id_baud_rate))
@@ -572,6 +653,9 @@ void QFlexProp::update_baud_rate()
     }
 }
 
+/**
+ * @brief Update the parity, data bits, and stop bits display in the statusbar
+ */
 void QFlexProp::update_parity_data_stop()
 {
     if (!m_labels.contains(id_parity_data_stop))
@@ -594,21 +678,33 @@ void QFlexProp::update_parity_data_stop()
     }
 }
 
+/**
+ * @brief Update the data bits display in the statusbar
+ */
 void QFlexProp::update_data_bits()
 {
     update_parity_data_stop();
 }
 
+/**
+ * @brief Update the parity display in the statusbar
+ */
 void QFlexProp::update_parity()
 {
     update_parity_data_stop();
 }
 
+/**
+ * @brief Update the stop bits display in the statusbar
+ */
 void QFlexProp::update_stop_bits()
 {
     update_parity_data_stop();
 }
 
+/**
+ * @brief Update the flow control display in the statusbar
+ */
 void QFlexProp::update_flow_control()
 {
     if (!m_labels.contains(id_flow_control))
@@ -625,18 +721,28 @@ void QFlexProp::update_flow_control()
     }
 }
 
+/**
+ * @brief Update the DTR display in the statusbar
+ */
 void QFlexProp::update_dtr(bool set)
 {
     Q_UNUSED(set)
     update_pinout();
 }
 
+/**
+ * @brief Update the RTS display in the statusbar
+ */
 void QFlexProp::update_rts(bool set)
 {
     Q_UNUSED(set)
     update_pinout();
 }
 
+/**
+ * @brief Slot is called when an error occured on the serial port
+ * @param error SerialPortError code
+ */
 void QFlexProp::error_occured(QSerialPort::SerialPortError error)
 {
     QString message;
@@ -688,15 +794,22 @@ void QFlexProp::error_occured(QSerialPort::SerialPortError error)
 	break;
     }
     if (!message.isEmpty())
-	log_error(message);
+	log_error(message, true);
 }
 
+/**
+ * @brief Update the break enable display in the status bar
+ * @param set if true, break is set, otherwise it's reset
+ */
 void QFlexProp::update_break_enable(bool set)
 {
     Q_UNUSED(set)
     update_pinout(true);
 }
 
+/**
+ * @brief Setup the status bar display elements
+ */
 void QFlexProp::setup_statusbar()
 {
     const QFrame::Shape shape = QFrame::WinPanel;
@@ -762,6 +875,9 @@ void QFlexProp::setup_statusbar()
 		  .arg(tr("Hello!")));
 }
 
+/**
+ * @brief Setup the serial port and connect to the QSerialPort signals
+ */
 void QFlexProp::setup_port()
 {
     SerTerm* st = ui->tabWidget->findChild<SerTerm*>(id_terminal);
@@ -845,7 +961,10 @@ void QFlexProp::setup_port()
     st->set_device(m_dev);
 }
 
-void QFlexProp::open_port()
+/**
+ * @brief Configure the serial port by setting it's parameters
+ */
+void QFlexProp::configure_port()
 {
     setup_port();
 
@@ -922,16 +1041,19 @@ void QFlexProp::open_port()
     } while (0);
 #endif
 
-    setup_widget();
+    setup_mainwindow();
     update_parity_data_stop();
     update_pinout();
 }
 
+/**
+ * @brief Close the serial port
+ */
 void QFlexProp::close_port()
 {
     disconnect(m_dev);
     m_dev->close();
-    setup_widget();
+    setup_mainwindow();
     update_pinout();
 }
 
@@ -988,6 +1110,7 @@ int QFlexProp::insert_tab(const QString& filename)
 		    .arg(info.fileName())
 		    .arg(pe->filetype_name());
     if (info.exists()) {
+	pe->setUpdatesEnabled(false);
 	if (pe->load(filename)) {
 	    log_message(tr("Loaded file '%1' (%2 Bytes).")
 			.arg(info.fileName())
@@ -997,20 +1120,24 @@ int QFlexProp::insert_tab(const QString& filename)
 	    log_message(tr("Could not load file '%1'.")
 			.arg(info.fileName()));
 	}
+	pe->setUpdatesEnabled(true);
     }
     ui->tabWidget->insertTab(curtab, tab, title);
     ui->tabWidget->setCurrentIndex(curtab);
 
-    // Make the splitter bottom (text browser) height 1/4th
-    // its default height of half the height of the tab
+    // Make the splitter bottom (text browser) height 1/3rd
+    // its default height of half the height of the tab page
     QList<int> sizes = spl->sizes();
-    sizes[0] += sizes[1] * 3 / 4;
-    sizes[1] = sizes[1] / 4;
+    sizes[0] += sizes[1] * 2 / 3;
+    sizes[1] = sizes[1] / 3;
     spl->setSizes(sizes);
 
     return curtab;
 }
 
+/**
+ * @brief File -> New action
+ */
 void QFlexProp::on_action_New_triggered()
 {
     QSettings s;
@@ -1024,6 +1151,9 @@ void QFlexProp::on_action_New_triggered()
     insert_tab(new_filename);
 }
 
+/**
+ * @brief File -> Open action
+ */
 void QFlexProp::on_action_Open_triggered()
 {
     QString filename = load_file(tr("Open source file"));
@@ -1032,6 +1162,9 @@ void QFlexProp::on_action_Open_triggered()
     insert_tab(filename);
 }
 
+/**
+ * @brief File -> Save action
+ */
 void QFlexProp::on_action_Save_triggered()
 {
     QLocale locale = QLocale::system();
@@ -1060,6 +1193,9 @@ void QFlexProp::on_action_Save_triggered()
     }
 }
 
+/**
+ * @brief File -> Save as action
+ */
 void QFlexProp::on_action_Save_as_triggered()
 {
     QLocale locale = QLocale::system();
@@ -1089,6 +1225,9 @@ void QFlexProp::on_action_Save_as_triggered()
     }
 }
 
+/**
+ * @brief File -> Close action
+ */
 void QFlexProp::on_action_Close_triggered()
 {
     PropEdit *pe = current_editor();
@@ -1110,11 +1249,17 @@ void QFlexProp::on_action_Close_triggered()
     ui->tabWidget->removeTab(ui->tabWidget->currentIndex());
 }
 
+/**
+ * @brief File -> Quit action
+ */
 void QFlexProp::on_action_Quit_triggered()
 {
     close();
 }
 
+/**
+ * @brief Edit -> Select all action
+ */
 void QFlexProp::on_action_Select_all_triggered()
 {
     PropEdit* pe = current_editor();
@@ -1123,14 +1268,20 @@ void QFlexProp::on_action_Select_all_triggered()
     pe->selectAll();
 }
 
+/**
+ * @brief Edit -> Delete action
+ */
 void QFlexProp::on_action_Delete_triggered()
 {
     PropEdit* pe = current_editor();
     if (!pe)
 	return;
-    pe->selectAll();
+    pe->clear();
 }
 
+/**
+ * @brief Edit -> Cut action
+ */
 void QFlexProp::on_action_Cut_triggered()
 {
     PropEdit* pe = current_editor();
@@ -1139,6 +1290,9 @@ void QFlexProp::on_action_Cut_triggered()
     pe->cut();
 }
 
+/**
+ * @brief Edit -> Copy action
+ */
 void QFlexProp::on_action_Copy_triggered()
 {
     PropEdit* pe = current_editor();
@@ -1147,6 +1301,9 @@ void QFlexProp::on_action_Copy_triggered()
     pe->copy();
 }
 
+/**
+ * @brief Edit -> Paste action
+ */
 void QFlexProp::on_action_Paste_triggered()
 {
     PropEdit* pe = current_editor();
@@ -1155,6 +1312,58 @@ void QFlexProp::on_action_Paste_triggered()
     pe->paste();
 }
 
+void QFlexProp::on_action_Find_triggered()
+{
+
+}
+
+void QFlexProp::on_action_Find_Replace_triggered()
+{
+
+}
+
+void QFlexProp::line_number_finished()
+{
+    QWidget* wdg = ui->tabWidget->widget(ui->tabWidget->currentIndex());
+    if (!wdg)
+	return;
+    QSplitter* spl = wdg->findChild<QSplitter*>(QLatin1String("spl"));
+    if (!spl)
+	return;
+    PropEdit* pe = spl->findChild<PropEdit*>(QLatin1String("pe"));
+    if (!pe)
+	return;
+    QLineEdit* le = spl->findChild<QLineEdit*>(QLatin1String("ln"));
+    if (!le)
+	return;
+    bool ok;
+    int lnum = le->text().toInt(&ok);
+    if (!ok)
+	lnum = 0;
+    delete spl->widget(spl->indexOf(le));
+    pe->gotoLineNumber(lnum);
+}
+
+void QFlexProp::on_action_Goto_line_triggered()
+{
+    QWidget* wdg = ui->tabWidget->widget(ui->tabWidget->currentIndex());
+    if (!wdg)
+	return;
+    QSplitter* spl = wdg->findChild<QSplitter*>(QLatin1String("spl"));
+    if (!spl)
+	return;
+    QLineEdit* le = new QLineEdit();
+    le->setObjectName(QLatin1String("ln"));
+    le->setPlaceholderText(tr("Line number"));
+    connect(le, &QLineEdit::editingFinished,
+	    this, &QFlexProp::line_number_finished);
+    spl->addWidget(le);
+    le->setFocus();
+}
+
+/**
+ * @brief Preferences -> Settings action
+ */
 void QFlexProp::on_action_Settings_triggered()
 {
     SettingsDlg dlg(this);
@@ -1170,6 +1379,9 @@ void QFlexProp::on_action_Settings_triggered()
     }
 }
 
+/**
+ * @brief Preferences -> Configure serial port action
+ */
 void QFlexProp::on_action_Configure_serialport_triggered()
 {
     bool was_open = m_dev->isOpen();
@@ -1208,12 +1420,15 @@ void QFlexProp::on_action_Configure_serialport_triggered()
     qDebug("%s: flow control : %s", __func__, qPrintable(flow_control_str.value(m_flow_control)));
     qDebug("%s: local echo   : %s", __func__, m_local_echo ? "on" : "off");
     if (was_open) {
-	open_port();
+	configure_port();
     } else {
-	setup_widget();
+	setup_mainwindow();
     }
 }
 
+/**
+ * @brief Preferences -> Configure flexspin action
+ */
 void QFlexProp::on_action_Configure_flexspin_triggered()
 {
     FlexspinDlg dlg(this);
@@ -1258,6 +1473,9 @@ void QFlexProp::on_action_Configure_flexspin_triggered()
     s.endGroup();
 }
 
+/**
+ * @brief View -> Show listing action
+ */
 void QFlexProp::on_action_Show_listing_triggered()
 {
     PropEdit* pe = current_editor();
@@ -1269,6 +1487,9 @@ void QFlexProp::on_action_Show_listing_triggered()
     dlg.exec();
 }
 
+/**
+ * @brief View -> Show binary action
+ */
 void QFlexProp::on_action_Show_binary_triggered()
 {
     PropEdit* pe = current_editor();
@@ -1281,16 +1502,28 @@ void QFlexProp::on_action_Show_binary_triggered()
     dlg.exec();
 }
 
+/**
+ * @brief Compile -> Verbose upload action
+ */
 void QFlexProp::on_action_Verbose_upload_triggered()
 {
     m_compile_verbose_upload = ui->action_Verbose_upload->isChecked();
 }
 
+/**
+ * @brief Compile -> Switch to term action
+ */
 void QFlexProp::on_action_Switch_to_term_triggered()
 {
     m_compile_switch_to_term = ui->action_Switch_to_term->isChecked();
 }
 
+/**
+ * @brief Return a quoted string if @p src contains a space
+ * @param src const reference to the source string
+ * @param quote character to use for quoting
+ * @return quoted or original string
+ */
 QString QFlexProp::quoted(const QString& src, const QChar quote)
 {
     if (src.contains(QChar::Space))
@@ -1447,11 +1680,17 @@ bool QFlexProp::flexspin(QByteArray* p_binary, QString* p_p2asm, QString* p_lst)
     return true;
 }
 
+/**
+ * @brief Compile -> Build action
+ */
 void QFlexProp::on_action_Build_triggered()
 {
     flexspin();
 }
 
+/**
+ * @brief Compile -> Upload action
+ */
 void QFlexProp::on_action_Upload_triggered()
 {
     PropEdit* pe = current_editor();
@@ -1463,6 +1702,9 @@ void QFlexProp::on_action_Upload_triggered()
     }
 }
 
+/**
+ * @brief Compile -> Run action
+ */
 void QFlexProp::on_action_Run_triggered()
 {
     SerTerm* st = ui->tabWidget->findChild<SerTerm*>(id_terminal);
@@ -1479,7 +1721,7 @@ void QFlexProp::on_action_Run_triggered()
     if (binary.isEmpty())
 	return;
 
-    // disconnect from the readRead() signal during upload
+    // disconnect from the readyRead() signal during upload
     disconnect(m_dev, &QSerialPort::readyRead,
 	       this, &QFlexProp::dev_ready_read);
     st->reset();
@@ -1496,7 +1738,7 @@ void QFlexProp::on_action_Run_triggered()
 	    this, &QFlexProp::Progress);
     bool ok = propload.load_file(binary);
 
-    // re-connect to the readRead() signal
+    // re-connect to the readyRead() signal
     connect(m_dev, &QSerialPort::readyRead,
 	    this, &QFlexProp::dev_ready_read,
 	    Qt::UniqueConnection);
@@ -1513,17 +1755,27 @@ void QFlexProp::on_action_Run_triggered()
     }
 }
 
+/**
+ * @brief Help -> About action
+ */
 void QFlexProp::on_action_About_triggered()
 {
     AboutDlg dlg(this);
     dlg.exec();
 }
 
+/**
+ * @brief Help -> About Qt5 action
+ */
 void QFlexProp::on_action_About_Qt5_triggered()
 {
     qApp->aboutQt();
 }
 
+/**
+ * @brief Slot called when a process output channel has data to be read
+ * @param channel which channel (stdout or stderr)
+ */
 void QFlexProp::channelReadyRead(int channel)
 {
     QProcess* process = qobject_cast<QProcess*>(sender());
@@ -1544,6 +1796,10 @@ void QFlexProp::channelReadyRead(int channel)
     }
 }
 
+/**
+ * @brief Print an error message to the tab's QTextBrowser
+ * @param message text to print
+ */
 void QFlexProp::printError(const QString& message)
 {
     QEventLoop loop(this);
@@ -1555,6 +1811,10 @@ void QFlexProp::printError(const QString& message)
     loop.processEvents();
 }
 
+/**
+ * @brief Print a normal message to the tab's QTextBrowser
+ * @param message text to print
+ */
 void QFlexProp::printMessage(const QString& message)
 {
     QEventLoop loop(this);
@@ -1566,12 +1826,19 @@ void QFlexProp::printMessage(const QString& message)
     loop.processEvents();
 }
 
+/**
+ * @brief Update the statusbar's progress bar
+ * @param value current value
+ * @param total maximum value (which equals 100%)
+ */
 void QFlexProp::Progress(qint64 value, qint64 total)
 {
     QEventLoop loop(this);
     QProgressBar* pb = ui->statusbar->findChild<QProgressBar*>(id_progress);
     if (!pb)
 	return;
+
+    // Scale down to 32 bit integer range
     while (total >= INT32_MAX) {
 	total >>= 10;
 	value >>= 10;

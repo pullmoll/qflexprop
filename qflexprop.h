@@ -58,14 +58,15 @@ private slots:
 
     void update_pinout(bool redo = false);
     void tab_changed(int index);
+    void tab_close_requested(int index);
 
     void load_settings();
     void save_settings();
-    void setup_widget();
+    void setup_mainwindow();
     void setup_signals();
     void setup_statusbar();
     void setup_port();
-    void open_port();
+    void configure_port();
     void close_port();
 
     void on_action_New_triggered();
@@ -80,6 +81,10 @@ private slots:
     void on_action_Cut_triggered();
     void on_action_Copy_triggered();
     void on_action_Paste_triggered();
+    void on_action_Find_triggered();
+    void on_action_Find_Replace_triggered();
+    void line_number_finished();
+    void on_action_Goto_line_triggered();
 
     void on_action_Settings_triggered();
     void on_action_Configure_serialport_triggered();
@@ -132,8 +137,8 @@ private:
     bool m_compile_switch_to_term;
 
     int insert_tab(const QString& filename);
-    PropEdit* current_editor() const;
-    QTextBrowser* current_browser() const;
+    PropEdit* current_editor(int index = -1) const;
+    QTextBrowser* current_browser(int index = -1) const;
     QString load_file(const QString& title);
     QString save_file(const QString& filename, const QString& title);
 

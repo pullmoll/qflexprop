@@ -27,6 +27,9 @@
       <property name="documentMode">
        <bool>true</bool>
       </property>
+      <property name="tabsClosable">
+       <bool>true</bool>
+      </property>
       <widget class="SerTerm" name="terminal">
        <attribute name="title">
         <string>Terminal</string>
@@ -70,6 +73,8 @@
     <addaction name="separator"/>
     <addaction name="action_Find"/>
     <addaction name="action_Find_Replace"/>
+    <addaction name="separator"/>
+    <addaction name="action_Goto_line"/>
    </widget>
    <widget class="QMenu" name="menu_View">
     <property name="title">
@@ -372,6 +377,14 @@
    </property>
    <property name="toolTip">
     <string>Switch to terminal after successful upload</string>
+   </property>
+  </action>
+  <action name="action_Goto_line">
+   <property name="text">
+    <string>Goto &amp;line</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+L</string>
    </property>
   </action>
  </widget>
