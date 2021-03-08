@@ -275,11 +275,14 @@ void QFlexProp::setup_signals()
 void QFlexProp::dev_ready_read()
 {
 
-    QByteArray data = m_dev->readAll();
-    DBG_DATA("%s: recv %d bytes\n%s", __func__, data.length(),
-	     qPrintable(util.dump(__func__, data)));
-    ui->terminal->write(data);
-    update_pinout(true);
+    qint64 available = m_dev->bytesAvailable();
+    if (available > 0) {
+	QByteArray data = m_dev->read(available);
+	DBG_DATA("%s: recv %d bytes\n%s", __func__, data.length(),
+		 qPrintable(util.dump(__func__, data)));
+	ui->terminal->write(data);
+	update_pinout(true);
+    }
 }
 
 void QFlexProp::dev_close()
@@ -478,6 +481,7 @@ void QFlexProp::update_pinout(bool redo)
 	    m_labels[id_pe]->setPixmap(led(id_pe, QSerialPort::ParityError == err ? red : off));
 	}
     }
+
     if (redo) {
 	update_baud_rate();
 	update_parity_data_stop();
@@ -555,13 +559,16 @@ void QFlexProp::update_baud_rate()
 
     QSerialPort* stty = qobject_cast<QSerialPort*>(m_dev);
     if (stty) {
+	QLocale locale = QLocale::system();
 	QSerialPort::Directions directions = stty->AllDirections;
 	qint32 baud_rate = stty->baudRate(directions);
-	QLocale locale = QLocale::system();
 	QLabel* lbl_baud = m_labels[id_baud_rate];
 	QString baud = locale.toString(baud_rate);
 	QString dir = direction_str.value(directions);
-	lbl_baud->setText(QString("%1%2").arg(dir).arg(baud));
+	QString str = QString("%1%2").arg(dir).arg(baud);
+	// FIXME: does it make a difference to check for changed text?
+	if (str != lbl_baud->text())
+	    lbl_baud->setText(str);
     }
 }
 
@@ -577,11 +584,13 @@ void QFlexProp::update_parity_data_stop()
 	QString parity = m_dev ? QString(parity_char.value(stty->parity())) : str_unknown;
 	QString data = m_dev ? data_bits_str.value(stty->dataBits()) : str_unknown;
 	QString stop = m_dev ? stop_bits_str.value(stty->stopBits()) : str_unknown;
-	QString dps = QString("%1%2%3")
+	QString str = QString("%1%2%3")
 		      .arg(parity)
 		      .arg(data)
 		      .arg(stop);
-	lbl_pds->setText(dps);
+	// FIXME: does it make a difference to check for changed text?
+	if (str != lbl_pds->text())
+	    lbl_pds->setText(str);
     }
 }
 
@@ -608,8 +617,11 @@ void QFlexProp::update_flow_control()
     if (stty) {
 	QSerialPort::FlowControl flow_control = stty->flowControl();
 	QLabel* lbl_flow = m_labels[id_flow_control];
-	lbl_flow->setText(flow_ctrl_str.value(flow_control));
-	lbl_flow->setToolTip(flow_ctrl_tooltip.value(flow_control));
+	QString str = flow_ctrl_str.value(flow_control);
+	if (str != lbl_flow->text()) {
+	    lbl_flow->setText(str);
+	    lbl_flow->setToolTip(flow_ctrl_tooltip.value(flow_control));
+	}
     }
 }
 
@@ -1457,12 +1469,16 @@ void QFlexProp::on_action_Run_triggered()
     QTextBrowser* tb = current_browser();
     Q_ASSERT(tb);
 
+    // compile and get resulting binary
     QByteArray binary;
-    flexspin(&binary);
+    if (!flexspin(&binary))
+	return;
 
+    // if binary is empty we do not upload, of course
     if (binary.isEmpty())
 	return;
 
+    // disconnect from the readRead() signal during upload
     disconnect(m_dev, &QSerialPort::readyRead,
 	       this, &QFlexProp::dev_ready_read);
     st->reset();
@@ -1478,18 +1494,22 @@ void QFlexProp::on_action_Run_triggered()
 	    this, &QFlexProp::printMessage);
     connect(&propload, &PropLoad::Progress,
 	    this, &QFlexProp::Progress);
-    propload.load_file(binary);
+    bool ok = propload.load_file(binary);
+
+    // re-connect to the readRead() signal
     connect(m_dev, &QSerialPort::readyRead,
 	    this, &QFlexProp::dev_ready_read,
 	    Qt::UniqueConnection);
-    if (m_compile_switch_to_term) {
-	// Select the terminal tab
-	ui->tabWidget->setCurrentWidget(ui->terminal);
-	ui->terminal->setFocus();
-    }
-    // Process data which may have been received while signal handling was blocked
-    if (m_dev->bytesAvailable() > 0) {
-	dev_ready_read();
+    if (ok) {
+	if (m_compile_switch_to_term) {
+	    // Select the terminal tab
+	    ui->tabWidget->setCurrentWidget(ui->terminal);
+	    ui->terminal->setFocus();
+	}
+	// Process data which may have been received while signal handling was blocked
+	if (m_dev->bytesAvailable() > 0) {
+	    dev_ready_read();
+	}
     }
 }
 
