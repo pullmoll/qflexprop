@@ -84,6 +84,8 @@ const QLatin1String p2tools_path("C:/Program Files (x86)/p2tools");
 const QLatin1String p2tools_path("");
 #endif
 const QLatin1String id_grp_flexspin("flexspin");
+const QLatin1String id_compile_verbose_upload("quiet_mode");
+const QLatin1String id_compile_switch_to_term("switch_to_term)");
 const QLatin1String id_flexspin_binary("binary");
 const QLatin1String id_flexspin_quiet("quiet");
 const QLatin1String id_flexspin_include_paths("include_paths");

@@ -139,7 +139,8 @@ void SerTerm::zoom_in()
 {
     int zoom = ui->vterm->zoom();
     if (zoom < 300) {
-	ui->vterm->set_zoom(zoom + 4);
+	m_zoom = zoom + 4;
+	ui->vterm->set_zoom(m_zoom);
     }
 }
 
@@ -147,7 +148,8 @@ void SerTerm::zoom_out()
 {
     int zoom = ui->vterm->zoom();
     if (zoom > 5) {
-	ui->vterm->set_zoom(zoom - 4);
+	m_zoom = zoom - 4;
+	ui->vterm->set_zoom(m_zoom);
     }
 }
 
@@ -615,8 +617,7 @@ void SerTerm::keyPressEvent(QKeyEvent* event)
     case Qt::Key_Plus:
 	// Zoom in ?
 	if (ctrl) {
-	    if (m_zoom < 300)
-		set_zoom(m_zoom + 4);
+	    zoom_in();
 	    break;
 	}
 	key = QChar('+');
@@ -627,8 +628,7 @@ void SerTerm::keyPressEvent(QKeyEvent* event)
     case Qt::Key_Minus:
 	// Zoom out ?
 	if (ctrl) {
-	    if (m_zoom > 4)
-		set_zoom(m_zoom - 4);
+	    zoom_out();
 	    break;
 	}
 	key = QChar('-');

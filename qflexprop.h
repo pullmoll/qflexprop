@@ -127,6 +127,8 @@ private:
     bool m_flexspin_errors;
     quint32 m_flexspin_hub_address;
     bool m_flexspin_skip_coginit;
+    bool m_compile_verbose_upload;
+    bool m_compile_switch_to_term;
 
     int insert_tab(const QString& filename);
     PropEdit* current_editor() const;

@@ -75,6 +75,8 @@ QFlexProp::QFlexProp(QWidget *parent)
     , m_flexspin_errors(false)
     , m_flexspin_hub_address(0)
     , m_flexspin_skip_coginit(false)
+    , m_compile_verbose_upload(false)
+    , m_compile_switch_to_term(true)
 {
     ui->setupUi(this);
 
@@ -382,13 +384,17 @@ void QFlexProp::load_settings()
 	m_flexspin_hub_address = 0;
     }
     m_flexspin_skip_coginit = s.value(id_flexspin_skip_coginit, false).toBool();
+    m_compile_verbose_upload = s.value(id_compile_verbose_upload, false).toBool();
+    m_compile_switch_to_term = s.value(id_compile_switch_to_term, true).toBool();
     s.endGroup();
+
+    ui->action_Verbose_upload->setChecked(m_compile_verbose_upload);
+    ui->action_Switch_to_term->setChecked(m_compile_switch_to_term);
 }
 
 void QFlexProp::save_settings()
 {
     QSettings s;
-
 
     s.beginGroup(id_grp_application);
     // Save window geometry
@@ -396,6 +402,7 @@ void QFlexProp::save_settings()
     const QString& family = m_fixedfont.family();
     const int size = m_fixedfont.pointSize();
     const int weight = m_fixedfont.weight();
+    // Save fixed font configuration
     s.setValue(id_fixedfont_family, family);
     s.setValue(id_fixedfont_size, size);
     s.setValue(id_fixedfont_weight, weight);
@@ -413,6 +420,9 @@ void QFlexProp::save_settings()
     s.endGroup();
     s.endGroup();
 
+    m_compile_verbose_upload = ui->action_Verbose_upload->isChecked();
+    m_compile_switch_to_term = ui->action_Switch_to_term->isChecked();
+
     s.beginGroup(id_grp_flexspin);
     s.setValue(id_flexspin_binary, m_flexspin_binary);
     s.setValue(id_flexspin_include_paths, m_flexspin_include_paths);
@@ -423,6 +433,8 @@ void QFlexProp::save_settings()
     s.setValue(id_flexspin_errors, m_flexspin_errors);
     s.setValue(id_flexspin_hub_address, m_flexspin_hub_address);
     s.setValue(id_flexspin_skip_coginit, m_flexspin_skip_coginit);
+    s.setValue(id_compile_verbose_upload, m_compile_verbose_upload);
+    s.setValue(id_compile_switch_to_term, m_compile_switch_to_term);
     s.endGroup();
 }
 
@@ -496,12 +508,13 @@ void QFlexProp::tab_changed(int index)
     const bool has_binary = pe && !pe->property(id_tab_binary).isNull();
     ui->action_Show_listing->setEnabled(enable && has_listing);
     ui->action_Show_binary->setEnabled(enable && has_binary);
-    ui->action_Verbose->setEnabled(enable);
-    ui->action_Switch->setEnabled(enable);
+    ui->action_Verbose_upload->setEnabled(enable);
+    ui->action_Switch_to_term->setEnabled(enable);
     ui->action_Build->setEnabled(enable);
     ui->action_Upload->setEnabled(enable);
     ui->action_Run->setEnabled(enable);
     if (index == ui->tabWidget->count() - 1) {
+	// Make sure that instead of the tab the terminal has the focus
 	ui->terminal->setFocus();
     }
 }
@@ -1449,7 +1462,7 @@ void QFlexProp::on_action_Run_triggered()
     PropLoad propload(m_dev, this);
     // base64 encoding fails with checksum
     // propload.set_mode(PropLoad::Prop_Txt);
-    propload.set_verbose(ui->action_Verbose->isChecked());
+    propload.set_verbose(ui->action_Verbose_upload->isChecked());
     // phex.set_use_checksum(false);
     propload.setProperty(id_process_tb, QVariant::fromValue(tb));
     connect(&propload, &PropLoad::Error,
@@ -1460,9 +1473,9 @@ void QFlexProp::on_action_Run_triggered()
 	    this, &QFlexProp::Progress);
     propload.load_file(binary);
     m_transfer.unlock();
-    if (ui->action_Switch->isChecked()) {
+    if (ui->action_Switch_to_term->isChecked()) {
 	// Select the terminal tab
-	ui->tabWidget->setCurrentIndex(ui->tabWidget->count() - 1);
+	tab_changed(ui->tabWidget->count() - 1);
     }
     // Process data which may have been received while signal handling was blocked
     if (m_dev->bytesAvailable() > 0) {

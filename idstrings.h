@@ -88,6 +88,8 @@ extern const QMap<QString,QString> pinout_leds;
 
 extern const QLatin1String p2tools_path;
 extern const QLatin1String id_grp_flexspin;
+extern const QLatin1String id_compile_verbose_upload;
+extern const QLatin1String id_compile_switch_to_term;
 extern const QLatin1String id_flexspin_binary;
 extern const QLatin1String id_flexspin_include_paths;
 extern const QLatin1String id_flexspin_quiet;

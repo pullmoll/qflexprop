@@ -82,8 +82,8 @@
     <property name="title">
      <string>&amp;Compile</string>
     </property>
-    <addaction name="action_Verbose"/>
-    <addaction name="action_Switch"/>
+    <addaction name="action_Verbose_upload"/>
+    <addaction name="action_Switch_to_term"/>
     <addaction name="separator"/>
     <addaction name="action_Build"/>
     <addaction name="action_Upload"/>
@@ -352,7 +352,7 @@
     <string>&amp;Settings</string>
    </property>
   </action>
-  <action name="action_Verbose">
+  <action name="action_Verbose_upload">
    <property name="checkable">
     <bool>true</bool>
    </property>
@@ -363,7 +363,7 @@
     <string>Be verbose when uploading to the P2</string>
    </property>
   </action>
-  <action name="action_Switch">
+  <action name="action_Switch_to_term">
    <property name="checkable">
     <bool>true</bool>
    </property>
