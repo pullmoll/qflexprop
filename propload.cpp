@@ -2,6 +2,8 @@
 #include "propload.h"
 #include "util.h"
 
+#define	WAIT_FOR_BYTES_WRITTEN	0
+
 PropLoad::PropLoad(QIODevice* dev, QObject* parent)
     : QObject(parent)
     , m_dev(dev)
@@ -41,9 +43,15 @@ bool PropLoad::use_checksum() const
 
 bool PropLoad::load_file(const QByteArray& data, bool patch_mode)
 {
-    return Prop_Hex == m_mode ?
-		load_single_file_hex(data, patch_mode) :
-		load_single_file_base64(data, patch_mode);
+    switch (m_mode) {
+    case Prop_Hex:
+	return load_single_file_hex(data, patch_mode);
+    case Prop_Txt:
+	return load_single_file_txt(data, patch_mode);
+    }
+    emit Error(tr("Invalid PropMode (%2).")
+	       .arg(m_mode));
+    return false;
 }
 
 bool PropLoad::load_file(const QString& filename, bool patch_mode)
@@ -88,7 +96,7 @@ void PropLoad::set_use_checksum(bool use_checksum)
  */
 quint32 PropLoad::compute_checksum(const QByteArray& data)
 {
-    int checksum = 0;
+    quint32 checksum = 0;
     for (int offs = 0; offs < data.size(); offs += sizeof(quint32))
 	checksum += util.get_le32(data, offs);
     return checksum;
@@ -100,9 +108,9 @@ quint32 PropLoad::compute_checksum(const QByteArray& data)
  * @param patch_mode if true, patch in the clock frequence, mode, and user baud
  * @return true on success, or false on error
  */
-bool PropLoad::load_single_file_base64(const QByteArray& data, bool patch_mode)
+bool PropLoad::load_single_file_txt(const QByteArray& data, bool patch_mode)
 {
-    static const QByteArray::Base64Options opts = QByteArray::Base64Encoding;
+    static const QByteArray::Base64Options opts = QByteArray::OmitTrailingEquals;
     int totnum = 0;
     quint32 checksum = 0;
 
@@ -124,6 +132,10 @@ bool PropLoad::load_single_file_base64(const QByteArray& data, bool patch_mode)
 
     for (int offs = 0; offs < data.size(); offs += chunksize) {
 	QByteArray block = data.mid(offs, chunksize);
+	if (block.size() & 3) {
+	    // pad block to multiples of 32 bit with zeroes
+	    block.append(4 - (block.size() & 3), 0);
+	}
 
 	// If patch_mode is enabled, patch the first block
 	if (patch_mode) {
@@ -134,16 +146,16 @@ bool PropLoad::load_single_file_base64(const QByteArray& data, bool patch_mode)
 	}
 
 	// If checksumming is enabled, add the block to the checksum
-	if (m_use_checksum) {
+	if (m_use_checksum)
 	    checksum += compute_checksum(block);
-	}
 
 	// Send the block as hex bytes
 	QByteArray buffer = QByteArray("> ") + block.toBase64(opts);
 	if (m_verbose)
-	    emit Message(tr("Send block offset 0x%1 '%2'.")
-		     .arg(offs, 4, 16, QChar('0'))
-		     .arg(QString::fromLatin1(buffer)));
+	    emit Message(tr("Send %1 bytes block @0x%2 '%3'")
+			 .arg(block.size())
+			 .arg(offs, 4, 16, QChar('0'))
+			 .arg(QString::fromLatin1(buffer)));
 
 	if (m_dev->write(buffer) != buffer.length()) {
 	    emit Error(tr("Failed to send data block at offset 0x%1, %2 bytes")
@@ -153,11 +165,14 @@ bool PropLoad::load_single_file_base64(const QByteArray& data, bool patch_mode)
 	}
 
 	// Wait for the block to be written
+#if WAIT_FOR_BYTES_WRITTEN > 0
+	// FIXME: do we need this?
 	if (!m_dev->waitForBytesWritten(30000)) {
 	    emit Error(tr("Failed to transfer %1 bytes block.")
 		       .arg(buffer.size()));
 	    return false;
 	}
+#endif
 	emit Progress(offs, data.size());
 	totnum += block.size();
     }
@@ -180,11 +195,14 @@ bool PropLoad::load_single_file_base64(const QByteArray& data, bool patch_mode)
 	}
 
 	// Wait until the checksum is written
+#if WAIT_FOR_BYTES_WRITTEN > 0
+	// FIXME: do we need this?
 	if (!m_dev->waitForBytesWritten(30000)) {
 	    emit Error(tr("Failed to transfer %1 bytes block.")
 		       .arg(buffer.size()));
 	    return false;
 	}
+#endif
 
 	buffer.clear();
 	// Now wait for a reply from the Prop
@@ -253,6 +271,10 @@ bool PropLoad::load_single_file_hex(const QByteArray& data, bool patch_mode)
 
     for (int offs = 0; offs < data.size(); offs += chunksize) {
 	QByteArray block = data.mid(offs, chunksize);
+	if (block.size() & 3) {
+	    // pad block to multiples of 32 bit with zeroes
+	    block.append(4 - (block.size() & 3), 0);
+	}
 
 	// If patch_mode is enabled, patch the first block
 	if (patch_mode) {
@@ -263,16 +285,16 @@ bool PropLoad::load_single_file_hex(const QByteArray& data, bool patch_mode)
 	}
 
 	// If checksumming is enabled, add the block to the checksum
-	if (m_use_checksum) {
+	if (m_use_checksum)
 	    checksum += compute_checksum(block);
-	}
 
 	// Send the block as hex bytes
 	QByteArray buffer = QByteArray("> ") + block.toHex(' ');
 	if (m_verbose)
-	    emit Message(tr("Send block offset 0x%1 '%2'.")
-		     .arg(offs, 4, 16, QChar('0'))
-		     .arg(QString::fromLatin1(buffer)));
+	    emit Message(tr("Send %1 bytes block @0x%2 '%3'")
+			 .arg(block.size())
+			 .arg(offs, 4, 16, QChar('0'))
+			 .arg(QString::fromLatin1(buffer)));
 
 	if (m_dev->write(buffer) != buffer.length()) {
 	    emit Error(tr("Failed to send data block at offset 0x%1, %2 bytes")
@@ -376,8 +398,15 @@ bool PropLoad::load_single_file(const QString& filename, bool patch_mode)
 			 .arg(filename)
 			 .arg(data.size()));
 	file.close();
-	return Prop_Hex == m_mode ? load_single_file_hex(data, patch_mode)
-				  : load_single_file_base64(data, patch_mode);
+	switch (m_mode) {
+	case Prop_Hex:
+	    return load_single_file_hex(data, patch_mode);
+	case Prop_Txt:
+	    return load_single_file_txt(data, patch_mode);
+	}
+	emit Error(tr("Invalid PropMode (%2).")
+		   .arg(m_mode));
+	return false;
     }
 
     emit Error(tr("Could not open '%1' for reading.")

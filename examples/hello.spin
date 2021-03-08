@@ -26,4 +26,4 @@ OBJ
 PUB hello
   ser.start(rx_pin, tx_pin, 0, baud)
   repeat
-    ser.printf("Hello, cruel world!\n")
+    ser.printf("Hello, world!\n")

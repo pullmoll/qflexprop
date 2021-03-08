@@ -255,7 +255,7 @@ void QFlexProp::setup_widget()
 	title += tr(" (no port)");
     }
     setWindowTitle(title);
-    ui->statusbar->showMessage(title);
+    log_message(title);
 }
 
 void QFlexProp::setup_signals()
@@ -746,6 +746,7 @@ void QFlexProp::setup_statusbar()
     QProgressBar* pb_progress = new QProgressBar();
     pb_progress->setObjectName(id_progress);
     pb_progress->setToolTip("Shows progress of the current activity.");
+    pb_progress->setFixedWidth(160);
     ui->statusbar->addPermanentWidget(pb_progress);
 
     QComboBox* cb_status = ui->statusbar->findChild<QComboBox*>(id_status);
@@ -988,13 +989,13 @@ int QFlexProp::insert_tab(const QString& filename)
 		    .arg(pe->filetype_name());
     if (info.exists()) {
 	if (pe->load(filename)) {
-	    ui->statusbar->showMessage(tr("Loaded file '%1' (%2 Bytes).")
-				    .arg(info.fileName())
-				   .arg(locale.toString(info.size())));
+	    log_message(tr("Loaded file '%1' (%2 Bytes).")
+			.arg(info.fileName())
+			.arg(locale.toString(info.size())));
 	    ui->tabWidget->setCurrentIndex(curtab);
 	} else {
-	    ui->statusbar->showMessage(tr("Could not load file '%1'.")
-				    .arg(info.fileName()));
+	    log_message(tr("Could not load file '%1'.")
+			.arg(info.fileName()));
 	}
     }
     ui->tabWidget->insertTab(curtab, tab, title);
@@ -1043,19 +1044,19 @@ void QFlexProp::on_action_Save_triggered()
 	QString text = pe->text();
 	QString filename = pe->filename();
 	QFileInfo info(filename);
-	ui->statusbar->showMessage(tr("File '%1' did not change.")
-				   .arg(info.fileName()));
+	log_message(tr("File '%1' did not change.")
+		    .arg(info.fileName()));
 	return;
     }
 
     QFileInfo info(pe->filename());
     if (pe->save(info.absoluteFilePath())) {
-	ui->statusbar->showMessage(tr("Saved file '%1' (%2 Bytes).")
-				   .arg(info.absoluteFilePath())
-				   .arg(locale.toString(info.size())));
+	log_message(tr("Saved file '%1' (%2 Bytes).")
+		    .arg(info.absoluteFilePath())
+		    .arg(locale.toString(info.size())));
     } else {
-	ui->statusbar->showMessage(tr("Could not save file '%1'.")
-				   .arg(info.absoluteFilePath()));
+	log_message(tr("Could not save file '%1'.")
+		    .arg(info.absoluteFilePath()));
     }
 }
 
@@ -1072,19 +1073,19 @@ void QFlexProp::on_action_Save_as_triggered()
     QString filename = pe->filename();
     QString save_as = save_file(filename, tr("Save source file"));
     if (save_as.isEmpty()) {
-	ui->statusbar->showMessage(tr("Saving file '%1' cancelled.")
-				   .arg(filename));
+	log_message(tr("Saving file '%1' cancelled.")
+		    .arg(filename));
 	return;
     }
 
     QFileInfo info(save_as);
     if (pe->save(save_as)) {
-	ui->statusbar->showMessage(tr("Saved file '%1' (%2 Bytes).")
-				   .arg(info.absoluteFilePath())
-				   .arg(locale.toString(info.size())));
+	log_message(tr("Saved file '%1' (%2 bytes).")
+		    .arg(info.absoluteFilePath())
+		    .arg(locale.toString(info.size())));
     } else {
-	ui->statusbar->showMessage(tr("Could not save file '%1'.")
-				   .arg(info.absoluteFilePath()));
+	log_message(tr("Could not save file '%1'.")
+		    .arg(info.absoluteFilePath()));
     }
 }
 
@@ -1483,7 +1484,6 @@ void QFlexProp::on_action_Run_triggered()
 	       this, &QFlexProp::dev_ready_read);
     st->reset();
     PropLoad propload(m_dev, this);
-    // base64 encoding fails with checksum
     // propload.set_mode(PropLoad::Prop_Txt);
     propload.set_verbose(m_compile_verbose_upload);
     // phex.set_use_checksum(false);

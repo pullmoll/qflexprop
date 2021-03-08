@@ -115,18 +115,16 @@ FileType Util::filetype(const QString& filename) const
 void Util::put_le32(QByteArray& data, int offs, quint32 value)
 {
     Q_ASSERT(offs>=0);
-    if (offs+0 < data.size()) {
-	data[offs+0] = static_cast<char>(value >>  0);
-    }
-    if (offs+1 < data.size()) {
-	data[offs+1] = static_cast<char>(value >>  8);
-    }
-    if (offs+2 < data.size()) {
-	data[offs+2] = static_cast<char>(value >> 16);
-    }
-    if (offs+3 < data.size()) {
-	data[offs+3] = static_cast<char>(value >> 24);
-    }
+    uchar* p = reinterpret_cast<uchar *>(data.data() + offs);
+    const int size = data.size();
+    if (offs+0 < size)
+	p[0] = static_cast<uchar>(value >>  0);
+    if (offs+1 < size)
+	p[1] = static_cast<uchar>(value >>  8);
+    if (offs+2 < size)
+	p[2] = static_cast<uchar>(value >> 16);
+    if (offs+3 < size)
+	p[3] = static_cast<uchar>(value >> 24);
 }
 
 /**
@@ -142,10 +140,12 @@ void Util::put_le32(QByteArray& data, int offs, quint32 value)
 quint32 Util::get_le32(const QByteArray& data, int offs)
 {
     Q_ASSERT(offs>=0);
-    const quint32 b0 = static_cast<quint32>(static_cast<uchar>(offs+0 < data.size() ? data[offs+0] : 0x00));
-    const quint32 b1 = static_cast<quint32>(static_cast<uchar>(offs+1 < data.size() ? data[offs+1] : 0x00));
-    const quint32 b2 = static_cast<quint32>(static_cast<uchar>(offs+2 < data.size() ? data[offs+2] : 0x00));
-    const quint32 b3 = static_cast<quint32>(static_cast<uchar>(offs+3 < data.size() ? data[offs+3] : 0x00));
+    const uchar* p = reinterpret_cast<const uchar *>(data.constData() + offs);
+    const int size = data.size();
+    const quint32 b0 = offs+0 < size ? p[0] : 0;
+    const quint32 b1 = offs+1 < size ? p[1] : 0;
+    const quint32 b2 = offs+2 < size ? p[2] : 0;
+    const quint32 b3 = offs+3 < size ? p[3] : 0;
     return (b0 <<  0) | (b1 <<  8) | (b2 << 16) | (b3 << 24);
 }
 
