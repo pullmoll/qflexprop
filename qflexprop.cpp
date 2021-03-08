@@ -18,9 +18,12 @@
 #include <QCryptographicHash>
 #include <QScrollArea>
 #include <QSplitter>
+#include <QFrame>
+#include <QSpacerItem>
 #include <QLineEdit>
 #include <QProgressBar>
 #include <QTextBrowser>
+#include <QHBoxLayout>
 #include <QVBoxLayout>
 #include <cinttypes>
 #include <fcntl.h>
@@ -66,7 +69,7 @@ QFlexProp::QFlexProp(QWidget *parent)
     , m_stop_bits(QSerialPort::OneStop)
     , m_flow_control(QSerialPort::NoFlowControl)
     , m_local_echo(false)
-    , m_flexspin_binary()
+    , m_flexspin_executable()
     , m_flexspin_include_paths()
     , m_flexspin_quiet(true)
     , m_flexspin_optimize(1)
@@ -100,7 +103,7 @@ QFlexProp::~QFlexProp()
  * @brief Return a pointer to the currently active PropEdit in the tab widget
  * @return pointer to propEdit or nullptr if there is none in the selected tab
  */
-PropEdit* QFlexProp::current_editor(int index) const
+PropEdit* QFlexProp::current_propedit(int index) const
 {
     const int tabidx = index < 0 ? ui->tabWidget->currentIndex() : index;
     QWidget *wdg = ui->tabWidget->widget(tabidx);
@@ -111,10 +114,10 @@ PropEdit* QFlexProp::current_editor(int index) const
     }
 
     // Check if this tab has a PropEdit
-    PropEdit *pe = wdg->findChild<PropEdit *>(QLatin1String("pe"));
+    PropEdit *pe = wdg->findChild<PropEdit *>(id_propedit);
     if (!pe) {
 	qDebug("%s: current tab %d has no PropEdit '%s'?", __func__,
-	       tabidx, qPrintable(QLatin1String("pe")));
+	       tabidx, qPrintable(id_propedit));
 	return nullptr;
     }
 
@@ -125,7 +128,7 @@ PropEdit* QFlexProp::current_editor(int index) const
  * @brief Return a pointer to the currently active QTextBrowser in the tab widget
  * @return pointer to QTextBrowser or nullptr if there is none in the selected tab
  */
-QTextBrowser* QFlexProp::current_browser(int index) const
+QTextBrowser* QFlexProp::current_textbrowser(int index) const
 {
     const int tabidx = index < 0 ? ui->tabWidget->currentIndex() : index;
     QWidget *wdg = ui->tabWidget->widget(tabidx);
@@ -135,10 +138,10 @@ QTextBrowser* QFlexProp::current_browser(int index) const
 	return nullptr;
     }
 
-    QTextBrowser *tb = wdg->findChild<QTextBrowser *>(QLatin1String("tb"));
+    QTextBrowser *tb = wdg->findChild<QTextBrowser *>(id_textbrowser);
     if (!tb) {
 	qDebug("%s: current tab %d has no text browser '%s'?", __func__,
-	       tabidx, qPrintable(QLatin1String("tb")));
+	       tabidx, qPrintable(id_textbrowser));
 	return nullptr;
     }
     return tb;
@@ -396,7 +399,7 @@ void QFlexProp::load_settings()
 
     s.beginGroup(id_grp_flexspin);
     QString binary_dflt = QString("%1/bin/flexspin").arg(p2tools_path);
-    m_flexspin_binary = s.value(id_flexspin_binary, binary_dflt).toString();
+    m_flexspin_executable = s.value(id_flexspin_executable, binary_dflt).toString();
     QStringList include_paths_default;
     include_paths_default += QString("%1/include").arg(p2tools_path);
     m_flexspin_include_paths = s.value(id_flexspin_include_paths, include_paths_default).toStringList();
@@ -453,7 +456,7 @@ void QFlexProp::save_settings()
     s.endGroup();
 
     s.beginGroup(id_grp_flexspin);
-    s.setValue(id_flexspin_binary, m_flexspin_binary);
+    s.setValue(id_flexspin_executable, m_flexspin_executable);
     s.setValue(id_flexspin_include_paths, m_flexspin_include_paths);
     s.setValue(id_flexspin_quiet, m_flexspin_quiet);
     s.setValue(id_flexspin_optimize, m_flexspin_optimize);
@@ -537,7 +540,7 @@ void QFlexProp::update_pinout(bool redo)
 void QFlexProp::tab_changed(int index)
 {
     Q_UNUSED(index)
-    const PropEdit* pe = current_editor(index);
+    const PropEdit* pe = current_propedit(index);
     const bool enable = pe != nullptr;
     const bool has_listing = pe && !pe->property(id_tab_p2asm).isNull();
     const bool has_binary = pe && !pe->property(id_tab_binary).isNull();
@@ -556,7 +559,7 @@ void QFlexProp::tab_changed(int index)
 
 void QFlexProp::tab_close_requested(int index)
 {
-    PropEdit* pe = current_editor(index);
+    PropEdit* pe = current_propedit(index);
     if (!pe)
 	return;
     if (pe->changed()) {
@@ -1067,7 +1070,7 @@ int QFlexProp::insert_tab(const QString& filename)
     QLocale locale = QLocale::system();
     QSettings s;
     const int tabs = ui->tabWidget->count();
-    const int curtab = tabs - 1;
+    const int tabidx = tabs - 1;
     QWidget *tab;
     QVBoxLayout *vlay;
     QSplitter *spl;
@@ -1076,22 +1079,20 @@ int QFlexProp::insert_tab(const QString& filename)
     PropEdit *pe;
 
     tab = new QWidget();
-    tab->setObjectName(QString("tab_%1").arg(curtab));
+    tab->setObjectName(QString("tab_%1").arg(tabidx));
 
     vlay = new QVBoxLayout(tab);
     vlay->setObjectName(QLatin1String("vlay"));
 
     spl = new QSplitter(Qt::Vertical);
-    spl->setObjectName(QLatin1String("spl"));
-
-    vlay->addWidget(spl);
+    spl->setObjectName(id_splitter);
 
     sa = new QScrollArea();
-    sa->setObjectName(QLatin1String("sa"));
+    sa->setObjectName(id_scrollarea);
     sa->setWidgetResizable(true);
 
     pe = new PropEdit();
-    pe->setObjectName(QLatin1String("pe"));
+    pe->setObjectName(id_propedit);
     pe->setGeometry(QRect(0, 0, 512, 512));
     pe->setFont(m_fixedfont);
 
@@ -1099,40 +1100,35 @@ int QFlexProp::insert_tab(const QString& filename)
     spl->addWidget(sa);
 
     tb = new QTextBrowser();
-    tb->setObjectName(QLatin1String("tb"));
+    tb->setObjectName(id_textbrowser);
     tb->setWordWrapMode(QTextOption::NoWrap);
     tb->setFont(m_fixedfont);
     spl->addWidget(tb);
 
-    pe->setFilename(filename);
+    vlay->addWidget(spl);
+    spl->setStretchFactor(0, 8);
+    spl->setStretchFactor(1, 1);
+
     QFileInfo info(filename);
     QString title = QString("%1 [%2]")
 		    .arg(info.fileName())
 		    .arg(pe->filetype_name());
+    ui->tabWidget->insertTab(tabidx, tab, title);
+    ui->tabWidget->setCurrentIndex(tabidx);
+
     if (info.exists()) {
-	pe->setUpdatesEnabled(false);
-	if (pe->load(filename)) {
+	if (pe->load(info.absoluteFilePath())) {
 	    log_message(tr("Loaded file '%1' (%2 Bytes).")
 			.arg(info.fileName())
 			.arg(locale.toString(info.size())));
-	    ui->tabWidget->setCurrentIndex(curtab);
+	    ui->tabWidget->setCurrentIndex(tabidx);
 	} else {
 	    log_message(tr("Could not load file '%1'.")
 			.arg(info.fileName()));
 	}
-	pe->setUpdatesEnabled(true);
     }
-    ui->tabWidget->insertTab(curtab, tab, title);
-    ui->tabWidget->setCurrentIndex(curtab);
 
-    // Make the splitter bottom (text browser) height 1/3rd
-    // its default height of half the height of the tab page
-    QList<int> sizes = spl->sizes();
-    sizes[0] += sizes[1] * 2 / 3;
-    sizes[1] = sizes[1] / 3;
-    spl->setSizes(sizes);
-
-    return curtab;
+    return tabidx;
 }
 
 /**
@@ -1168,7 +1164,7 @@ void QFlexProp::on_action_Open_triggered()
 void QFlexProp::on_action_Save_triggered()
 {
     QLocale locale = QLocale::system();
-    PropEdit *pe = current_editor();
+    PropEdit *pe = current_propedit();
     if (!pe) {
 	return;
     }
@@ -1199,7 +1195,7 @@ void QFlexProp::on_action_Save_triggered()
 void QFlexProp::on_action_Save_as_triggered()
 {
     QLocale locale = QLocale::system();
-    PropEdit *pe = current_editor();
+    PropEdit *pe = current_propedit();
     if (!pe) {
 	QMessageBox::critical(this, tr("No propEdit widget!"),
 		     tr("There is selected does not contain a propEdit widget."),
@@ -1230,7 +1226,7 @@ void QFlexProp::on_action_Save_as_triggered()
  */
 void QFlexProp::on_action_Close_triggered()
 {
-    PropEdit *pe = current_editor();
+    PropEdit *pe = current_propedit();
     if (!pe) {
 	return;
     }
@@ -1262,7 +1258,7 @@ void QFlexProp::on_action_Quit_triggered()
  */
 void QFlexProp::on_action_Select_all_triggered()
 {
-    PropEdit* pe = current_editor();
+    PropEdit* pe = current_propedit();
     if (!pe)
 	return;
     pe->selectAll();
@@ -1273,7 +1269,7 @@ void QFlexProp::on_action_Select_all_triggered()
  */
 void QFlexProp::on_action_Delete_triggered()
 {
-    PropEdit* pe = current_editor();
+    PropEdit* pe = current_propedit();
     if (!pe)
 	return;
     pe->clear();
@@ -1284,7 +1280,7 @@ void QFlexProp::on_action_Delete_triggered()
  */
 void QFlexProp::on_action_Cut_triggered()
 {
-    PropEdit* pe = current_editor();
+    PropEdit* pe = current_propedit();
     if (!pe)
 	return;
     pe->cut();
@@ -1295,7 +1291,7 @@ void QFlexProp::on_action_Cut_triggered()
  */
 void QFlexProp::on_action_Copy_triggered()
 {
-    PropEdit* pe = current_editor();
+    PropEdit* pe = current_propedit();
     if (!pe)
 	return;
     pe->copy();
@@ -1306,7 +1302,7 @@ void QFlexProp::on_action_Copy_triggered()
  */
 void QFlexProp::on_action_Paste_triggered()
 {
-    PropEdit* pe = current_editor();
+    PropEdit* pe = current_propedit();
     if (!pe)
 	return;
     pe->paste();
@@ -1327,20 +1323,23 @@ void QFlexProp::line_number_finished()
     QWidget* wdg = ui->tabWidget->widget(ui->tabWidget->currentIndex());
     if (!wdg)
 	return;
-    QSplitter* spl = wdg->findChild<QSplitter*>(QLatin1String("spl"));
+    QSplitter* spl = wdg->findChild<QSplitter*>(id_splitter);
     if (!spl)
 	return;
-    PropEdit* pe = spl->findChild<PropEdit*>(QLatin1String("pe"));
+    PropEdit* pe = spl->findChild<PropEdit*>(id_propedit);
     if (!pe)
 	return;
-    QLineEdit* le = spl->findChild<QLineEdit*>(QLatin1String("ln"));
+    QFrame* frm = spl->findChild<QFrame*>(id_frame);
+    if (!frm)
+	return;
+    QLineEdit* le = frm->findChild<QLineEdit*>(id_linenumber);
     if (!le)
 	return;
     bool ok;
     int lnum = le->text().toInt(&ok);
     if (!ok)
 	lnum = 0;
-    delete spl->widget(spl->indexOf(le));
+    delete spl->widget(spl->indexOf(frm));
     pe->gotoLineNumber(lnum);
 }
 
@@ -1349,15 +1348,34 @@ void QFlexProp::on_action_Goto_line_triggered()
     QWidget* wdg = ui->tabWidget->widget(ui->tabWidget->currentIndex());
     if (!wdg)
 	return;
-    QSplitter* spl = wdg->findChild<QSplitter*>(QLatin1String("spl"));
+    QSplitter* spl = wdg->findChild<QSplitter*>(id_splitter);
     if (!spl)
 	return;
+    QFrame* frm = spl->findChild<QFrame*>(id_frame);
+    // Return if this tab already has a line number frame
+    if (frm)
+	return;
+
+    frm = new QFrame();
+    frm->setObjectName(id_frame);
+    frm->setFrameStyle(QFrame::StyledPanel | QFrame::Sunken);
+    QHBoxLayout* hlay = new QHBoxLayout();
+    QLabel* lbl = new QLabel(tr("Go to line number:"));
+    lbl->setObjectName(id_label);
+
     QLineEdit* le = new QLineEdit();
-    le->setObjectName(QLatin1String("ln"));
-    le->setPlaceholderText(tr("Line number"));
+    le->setObjectName(id_linenumber);
+    le->setFixedWidth(10*8);
+    hlay->addWidget(lbl);
+    hlay->addWidget(le);
+    // add an empty widget to fill the space to the width
+    hlay->addWidget(new QWidget());
+    hlay->setStretch(2, 1);
+    frm->setLayout(hlay);
+    spl->addWidget(frm);
+
     connect(le, &QLineEdit::editingFinished,
 	    this, &QFlexProp::line_number_finished);
-    spl->addWidget(le);
     le->setFocus();
 }
 
@@ -1373,7 +1391,7 @@ void QFlexProp::on_action_Settings_triggered()
     m_fixedfont = dlg.font();
     // Update any open PropEdit's fonts
     for(int i = 0; i < ui->tabWidget->count(); i++) {
-	PropEdit* pe = ui->tabWidget->findChild<PropEdit*>(QLatin1String("pe"));
+	PropEdit* pe = ui->tabWidget->findChild<PropEdit*>(id_propedit);
 	if (pe)
 	    pe->setFont(m_fixedfont);
     }
@@ -1433,7 +1451,7 @@ void QFlexProp::on_action_Configure_flexspin_triggered()
 {
     FlexspinDlg dlg(this);
     FlexspinDlg::Settings f;
-    f.binary = m_flexspin_binary;
+    f.executable = m_flexspin_executable;
     f.include_paths = m_flexspin_include_paths;
     f.quiet = m_flexspin_quiet;
     f.optimize = m_flexspin_optimize;
@@ -1449,7 +1467,7 @@ void QFlexProp::on_action_Configure_flexspin_triggered()
 	return;
 
     f = dlg.settings();
-    m_flexspin_binary = f.binary;
+    m_flexspin_executable = f.executable;
     m_flexspin_quiet = f.quiet;
     m_flexspin_include_paths = f.include_paths;
     m_flexspin_optimize = f.optimize;
@@ -1461,7 +1479,7 @@ void QFlexProp::on_action_Configure_flexspin_triggered()
 
     QSettings s;
     s.beginGroup(id_grp_flexspin);
-    s.setValue(id_flexspin_binary, m_flexspin_binary);
+    s.setValue(id_flexspin_executable, m_flexspin_executable);
     s.setValue(id_flexspin_include_paths, m_flexspin_include_paths);
     s.setValue(id_flexspin_quiet, m_flexspin_quiet);
     s.setValue(id_flexspin_optimize, m_flexspin_optimize);
@@ -1478,7 +1496,7 @@ void QFlexProp::on_action_Configure_flexspin_triggered()
  */
 void QFlexProp::on_action_Show_listing_triggered()
 {
-    PropEdit* pe = current_editor();
+    PropEdit* pe = current_propedit();
     if (!pe)
 	return;
     TextBrowserDlg dlg(this);
@@ -1492,7 +1510,7 @@ void QFlexProp::on_action_Show_listing_triggered()
  */
 void QFlexProp::on_action_Show_binary_triggered()
 {
-    PropEdit* pe = current_editor();
+    PropEdit* pe = current_propedit();
     if (!pe)
 	return;
     TextBrowserDlg dlg(this);
@@ -1540,9 +1558,9 @@ QString QFlexProp::quoted(const QString& src, const QChar quote)
  */
 bool QFlexProp::flexspin(QByteArray* p_binary, QString* p_p2asm, QString* p_lst)
 {
-    QTextBrowser *tb = current_browser();
+    QTextBrowser *tb = current_textbrowser();
     Q_ASSERT(tb);
-    PropEdit *pe = current_editor();
+    PropEdit *pe = current_propedit();
     if (!pe)
 	return false;
 
@@ -1590,7 +1608,7 @@ bool QFlexProp::flexspin(QByteArray* p_binary, QString* p_p2asm, QString* p_lst)
     // print the command to be executed
     tb->setTextColor(Qt::blue);
     tb->append(QString("%1 %2")
-	       .arg(m_flexspin_binary)
+	       .arg(m_flexspin_executable)
 	       .arg(args.join(QStringLiteral(" \\\n\t"))));
 
     QProcess process(this);
@@ -1599,7 +1617,7 @@ bool QFlexProp::flexspin(QByteArray* p_binary, QString* p_p2asm, QString* p_lst)
 	    this, &QFlexProp::channelReadyRead);
 
     // run the command
-    process.start(m_flexspin_binary, args);
+    process.start(m_flexspin_executable, args);
     if (QProcess::Starting == process.state()) {
 	if (!process.waitForStarted()) {
 	    qCritical("%s: result code %d", __func__, process.exitCode());
@@ -1693,7 +1711,7 @@ void QFlexProp::on_action_Build_triggered()
  */
 void QFlexProp::on_action_Upload_triggered()
 {
-    PropEdit* pe = current_editor();
+    PropEdit* pe = current_propedit();
     Q_ASSERT(pe);
     QByteArray binary = pe->property(id_tab_binary).toByteArray();
     if (binary.isEmpty()) {
@@ -1709,7 +1727,7 @@ void QFlexProp::on_action_Run_triggered()
 {
     SerTerm* st = ui->tabWidget->findChild<SerTerm*>(id_terminal);
     Q_ASSERT(st);
-    QTextBrowser* tb = current_browser();
+    QTextBrowser* tb = current_textbrowser();
     Q_ASSERT(tb);
 
     // compile and get resulting binary
@@ -1735,7 +1753,7 @@ void QFlexProp::on_action_Run_triggered()
     connect(&propload, &PropLoad::Message,
 	    this, &QFlexProp::printMessage);
     connect(&propload, &PropLoad::Progress,
-	    this, &QFlexProp::Progress);
+	    this, &QFlexProp::showProgress);
     bool ok = propload.load_file(binary);
 
     // re-connect to the readyRead() signal
@@ -1748,7 +1766,8 @@ void QFlexProp::on_action_Run_triggered()
 	    ui->tabWidget->setCurrentWidget(ui->terminal);
 	    ui->terminal->setFocus();
 	}
-	// Process data which may have been received while signal handling was blocked
+	// Process any data which may have been received
+	// while the readyRead signal was disconnected
 	if (m_dev->bytesAvailable() > 0) {
 	    dev_ready_read();
 	}
@@ -1831,7 +1850,7 @@ void QFlexProp::printMessage(const QString& message)
  * @param value current value
  * @param total maximum value (which equals 100%)
  */
-void QFlexProp::Progress(qint64 value, qint64 total)
+void QFlexProp::showProgress(qint64 value, qint64 total)
 {
     QEventLoop loop(this);
     QProgressBar* pb = ui->statusbar->findChild<QProgressBar*>(id_progress);

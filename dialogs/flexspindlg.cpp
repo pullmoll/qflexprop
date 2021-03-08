@@ -43,7 +43,7 @@ FlexspinDlg::Settings FlexspinDlg::settings() const
 {
     Settings s;
     bool ok;
-    s.binary = ui->le_flexspin->text();
+    s.executable = ui->le_flexspin->text();
     s.quiet = ui->cb_quiet->isChecked();
     s.optimize = ui->le_optimize->text().toInt(&ok);
     if (!ok)
@@ -65,7 +65,7 @@ FlexspinDlg::Settings FlexspinDlg::settings() const
 
 void FlexspinDlg::set_settings(const FlexspinDlg::Settings& s)
 {
-    ui->le_flexspin->setText(s.binary);
+    ui->le_flexspin->setText(s.executable);
     ui->le_optimize->setText(QString::number(s.optimize));
     ui->cb_quiet->setChecked(s.quiet);
     ui->lw_include_paths->clear();

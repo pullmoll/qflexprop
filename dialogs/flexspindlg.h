@@ -20,7 +20,7 @@ class FlexspinDlg : public QDialog
 
 public:
     struct Settings {
-	QString binary;
+	QString executable;
 	QStringList include_paths;
 	bool quiet;
 	int optimize;

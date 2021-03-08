@@ -106,7 +106,7 @@ private slots:
     void printError(const QString& message);
     void printMessage(const QString& message);
 
-    void Progress(qint64 value, qint64 total);
+    void showProgress(qint64 value, qint64 total);
 
 private:
     Ui::QFlexProp *ui;
@@ -124,7 +124,7 @@ private:
     QSerialPort::FlowControl m_flow_control;	//!< serial port flow control
     bool m_local_echo;				//!< Local echo flag
 
-    QString m_flexspin_binary;
+    QString m_flexspin_executable;
     QStringList m_flexspin_include_paths;
     bool m_flexspin_quiet;
     int m_flexspin_optimize;
@@ -137,8 +137,8 @@ private:
     bool m_compile_switch_to_term;
 
     int insert_tab(const QString& filename);
-    PropEdit* current_editor(int index = -1) const;
-    QTextBrowser* current_browser(int index = -1) const;
+    PropEdit* current_propedit(int index = -1) const;
+    QTextBrowser* current_textbrowser(int index = -1) const;
     QString load_file(const QString& title);
     QString save_file(const QString& filename, const QString& title);
 

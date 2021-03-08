@@ -33,7 +33,8 @@ SOURCES += \
     $$PWD/term/vtscrollarea.cpp \
     dialogs/aboutdlg.cpp \
     dialogs/settingsdlg.cpp \
-    dialogs/textbrowserdlg.cpp
+    dialogs/textbrowserdlg.cpp \
+    loadelf.cpp
 
 HEADERS += \
     $$PWD/propconst.h \
@@ -56,7 +57,8 @@ HEADERS += \
     $$PWD/term/vtscrollarea.h \
     dialogs/aboutdlg.h \
     dialogs/settingsdlg.h \
-    dialogs/textbrowserdlg.h
+    dialogs/textbrowserdlg.h \
+    loadelf.h
 
 FORMS += \
     $$PWD/qflexprop.ui \
