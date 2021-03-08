@@ -74,6 +74,15 @@ extern const QLatin1String id_pwr;
 extern const QLatin1String id_progress;
 extern const QLatin1String id_download_path;
 
+extern const QLatin1String id_tab;
+extern const QLatin1String id_splitter;
+extern const QLatin1String id_scrollarea;
+extern const QLatin1String id_propedit;
+extern const QLatin1String id_textbrowser;
+extern const QLatin1String id_frame;
+extern const QLatin1String id_label;
+extern const QLatin1String id_linenumber;
+
 extern const QLatin1String str_unknown;
 
 extern const QMap<int,QString> direction_str;
@@ -90,7 +99,7 @@ extern const QLatin1String p2tools_path;
 extern const QLatin1String id_grp_flexspin;
 extern const QLatin1String id_compile_verbose_upload;
 extern const QLatin1String id_compile_switch_to_term;
-extern const QLatin1String id_flexspin_binary;
+extern const QLatin1String id_flexspin_executable;
 extern const QLatin1String id_flexspin_include_paths;
 extern const QLatin1String id_flexspin_quiet;
 extern const QLatin1String id_flexspin_optimize;

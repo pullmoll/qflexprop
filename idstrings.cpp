@@ -73,6 +73,15 @@ const QLatin1String id_pwr("pwr");
 const QLatin1String id_progress("progress");
 const QLatin1String id_download_path("downloads");
 
+const QLatin1String id_tab("tab_");
+const QLatin1String id_splitter("spl");
+const QLatin1String id_scrollarea("sa");
+const QLatin1String id_propedit("pe");
+const QLatin1String id_textbrowser("tb");
+const QLatin1String id_frame("frm");
+const QLatin1String id_label("lbl");
+const QLatin1String id_linenumber("lnum");
+
 const QLatin1String str_unknown("?");
 
 #if defined(Q_OS_LINUX)
@@ -86,7 +95,7 @@ const QLatin1String p2tools_path("");
 const QLatin1String id_grp_flexspin("flexspin");
 const QLatin1String id_compile_verbose_upload("quiet_mode");
 const QLatin1String id_compile_switch_to_term("switch_to_term)");
-const QLatin1String id_flexspin_binary("binary");
+const QLatin1String id_flexspin_executable("executable");
 const QLatin1String id_flexspin_quiet("quiet");
 const QLatin1String id_flexspin_include_paths("include_paths");
 const QLatin1String id_flexspin_optimize("optimize");
