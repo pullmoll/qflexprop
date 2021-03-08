@@ -44,12 +44,14 @@ public:
 	PROPED_DO_HIGHLIGHT             = (1 << 1),
 	PROPED_USE_PREPROC              = (1 << 2),
 	PROPED_USE_KEYWORDS             = (1 << 3),
-	PROPED_USE_SECTIONS             = (1 << 4),
-	PROPED_USE_OPERATORS            = (1 << 5),
-	PROPED_USE_BIN			= (1 << 6),
-	PROPED_USE_DEC			= (1 << 7),
-	PROPED_USE_HEX			= (1 << 8),
-	PROPED_USE_FLOAT		= (1 << 9),
+	PROPED_USE_CONDITIONALS         = (1 << 4),
+	PROPED_USE_SECTIONS             = (1 << 5),
+	PROPED_USE_OPERATORS            = (1 << 6),
+	PROPED_USE_BIN			= (1 << 7),
+	PROPED_USE_DEC			= (1 << 8),
+	PROPED_USE_HEX			= (1 << 9),
+	PROPED_USE_FLOAT		= (1 <<10),
+	PROPED_USE_IN_LINE_COMMENTS	= (1 <<13),
 	PROPED_USE_SINGLE_LINE_COMMENTS = (1 <<14),
 	PROPED_USE_MULTI_LINE_COMMENTS  = (1 <<15),
 
@@ -58,12 +60,14 @@ public:
 	    | PROPED_DO_HIGHLIGHT
 	    | PROPED_USE_PREPROC
 	    | PROPED_USE_KEYWORDS
+	    | PROPED_USE_CONDITIONALS
 	    | PROPED_USE_SECTIONS
 	    | PROPED_USE_OPERATORS
 	    | PROPED_USE_BIN
 	    | PROPED_USE_DEC
 	    | PROPED_USE_HEX
 	    | PROPED_USE_FLOAT
+	    | PROPED_USE_IN_LINE_COMMENTS
 	    | PROPED_USE_SINGLE_LINE_COMMENTS
 	    | PROPED_USE_MULTI_LINE_COMMENTS
     };
@@ -93,6 +97,7 @@ public slots:
     void setFont(const QFont& font);
     void setText(const QString& text);
     void setFilename(const QString& filename);
+    void gotoLineNumber(int lnum);
 
 protected:
     void resizeEvent(QResizeEvent *event);
@@ -133,6 +138,7 @@ private:
     static constexpr QRgb color_background = qRgb(0xfc,0xfc,0xf4);
     static constexpr QRgb color_preproc = qRgb(0x20, 0x20, 0xdf);
     static constexpr QRgb color_keyword = qRgb(0x00,0x9f,0x9f);
+    static constexpr QRgb color_conditional = qRgb(0x9f,0x00,0x9f);
     static constexpr QRgb color_section = qRgb(0x00,0x5f,0x5f);
     static constexpr QRgb color_operator = qRgb(0x20, 0x40, 0x80);
     static constexpr QRgb color_comment = qRgb(0x30, 0x80, 0x30);
@@ -148,10 +154,12 @@ private:
     QRegExp commentEndExpression;
 
     QTextCharFormat singleLineCommentFormat;
+    QTextCharFormat inLineCommentFormat;
     QTextCharFormat multiLineCommentFormat;
     QTextCharFormat sectionsFormat;
     QTextCharFormat operatorFormat;
     QTextCharFormat keywordFormat;
+    QTextCharFormat conditionalFormat;
     QTextCharFormat preprocFormat;
     QTextCharFormat binFormat;
     QTextCharFormat decFormat;

@@ -156,18 +156,31 @@ void PropEdit::setFilename(const QString& filename)
     setProperty(prop_filename, filename);
 }
 
+void PropEdit::gotoLineNumber(int lnum)
+{
+    // Find zero based line number
+    QTextBlock block = document()->findBlockByLineNumber(lnum - 1);
+    QTextCursor cursor(block);
+    cursor.clearSelection();
+    setTextCursor(cursor);
+    highlight_current_line();
+}
+
 bool PropEdit::load(const QString& filename)
 {
-    QFile file(filename);
-    FileType filetype = util.filetype(filename);
-    setProperty(prop_filetype, filetype);
+    QFileInfo info(filename);
+    QFile file(info.absoluteFilePath());
     if (file.open(QIODevice::ReadOnly)) {
-	QTextStream str(&file);
-	str.setCodec("UTF-8");
-	QString text = str.readAll();
+	QCryptographicHash sha256(QCryptographicHash::Sha256);
+	QByteArray data = file.readAll();
 	file.close();
-	setText(text);
+	QByteArray new_hash = sha256.result();
+	sha256.addData(data);
+	setProperty(prop_sha256, new_hash);
 	setProperty(prop_filename, filename);
+	FileType filetype = util.filetype(info.fileName());
+	setProperty(prop_filetype, filetype);
+	setText(QString::fromUtf8(data));
 	return true;
     }
     return false;
@@ -423,6 +436,20 @@ PropHighlighter::PropHighlighter(QTextDocument *doc, PropEdit::Options options)
 	highlightingRules.append(rule);
     }
 
+    // Highlight conditionals ?
+    // i.e. IF_NZ, IF_C, ...
+    if (m_options.testFlag(PropEdit::PROPED_USE_CONDITIONALS)) {
+	HighlightingRule rule;
+	QStringList keywords = g_tokens.list_esc(g_conditionals);
+	conditionalFormat.setBackground(QColor(color_background));
+	conditionalFormat.setForeground(QColor(color_conditional));
+	rule.pattern = QRegExp(QString("\\b(%1)\\b")
+			       .arg(keywords.join(QChar('|'))),
+			       Qt::CaseInsensitive);
+	rule.format = conditionalFormat;
+	highlightingRules.append(rule);
+    }
+
     // Highlight preprocessor statements
     // i.e. #define, #undef, #if, #ifdef, #else, ...
     if (m_options.testFlag(PropEdit::PROPED_USE_PREPROC)) {
@@ -437,16 +464,28 @@ PropHighlighter::PropHighlighter(QTextDocument *doc, PropEdit::Options options)
     }
 
     // Enable Multi-Line Comments ?
-    // Starting with "{{", ending with "}}"
+    // Starting with "{" or multiple "{{", ending with "}" or multiple "}}"
     if (options.testFlag(PropEdit::PROPED_USE_MULTI_LINE_COMMENTS)) {
 	HighlightingRule rule;
 	multiLineCommentFormat.setBackground(QColor(color_background));
 	multiLineCommentFormat.setForeground(QColor(color_comment));
-	commentStartExpression = QRegExp(QRegExp::escape("{{"));
+	commentStartExpression = QRegExp(QRegExp::escape("{"));
 	rule.pattern = commentStartExpression;
 	rule.format = multiLineCommentFormat;
 	highlightingRules.append(rule);
-	commentEndExpression = QRegExp(QRegExp::escape("}}"));
+	commentEndExpression = QRegExp(QRegExp::escape("}"));
+    }
+
+    // Enable In-Line Comments ? enclosed in "{" and "}"
+    if (m_options.testFlag(PropEdit::PROPED_USE_IN_LINE_COMMENTS)) {
+	HighlightingRule rule;
+	inLineCommentFormat.setBackground(QColor(color_background));
+	inLineCommentFormat.setForeground(QColor(color_comment));
+	rule.pattern = QRegExp(QString("%1[^}]*%2")
+			       .arg(QRegExp::escape("{"))
+			       .arg(QRegExp::escape("}")));
+	rule.format = inLineCommentFormat;
+	highlightingRules.append(rule);
     }
 
     // Enable Single-Line Comments ? (starting with "'" until end-of-line...)
