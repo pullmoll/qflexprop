@@ -491,6 +491,56 @@ CPropTokens::CPropTokens()
     add(TOK_AUGD, "AUGD", "AUGD");
     add(TOK__RET_, "_RET_", "_RET_");
 
+    add(TOK_IF_NZ_AND_NC, "IF_NZ_AND_NC", "IF_NZ_AND_NC");
+    add(TOK_IF_NC_AND_NZ, "IF_NC_AND_NZ", "IF_NC_AND_NZ");
+    add(TOK_IF_A, "IF_A", "IF_A");
+    add(TOK_IF_GT, "IF_GT", "IF_GT");
+    add(TOK_IF_00, "IF_00", "IF_00");
+    add(TOK_IF_Z_AND_NC, "IF_Z_AND_NC", "IF_Z_AND_NC");
+    add(TOK_IF_NC_AND_Z, "IF_NC_AND_Z", "IF_NC_AND_Z");
+    add(TOK_IF_01, "IF_01", "IF_01");
+    add(TOK_IF_NC, "IF_NC", "IF_NC");
+    add(TOK_IF_AE, "IF_AE", "IF_AE");
+    add(TOK_IF_GE, "IF_GE", "IF_GE");
+    add(TOK_IF_0X, "IF_0X", "IF_0X");
+    add(TOK_IF_NZ_AND_C, "IF_NZ_AND_C", "IF_NZ_AND_C");
+    add(TOK_IF_C_AND_NZ, "IF_C_AND_NZ", "IF_C_AND_NZ");
+    add(TOK_IF_10, "IF_10", "IF_10");
+    add(TOK_IF_NZ, "IF_NZ", "IF_NZ");
+    add(TOK_IF_NE, "IF_NE", "IF_NE");
+    add(TOK_IF_X0, "IF_X0", "IF_X0");
+    add(TOK_IF_Z_NE_C, "IF_Z_NE_C", "IF_Z_NE_C");
+    add(TOK_IF_C_NE_Z, "IF_C_NE_Z", "IF_C_NE_Z");
+    add(TOK_IF_DIFF, "IF_DIFF", "IF_DIFF");
+    add(TOK_IF_NZ_OR_NC, "IF_NZ_OR_NC", "IF_NZ_OR_NC");
+    add(TOK_IF_NC_OR_NZ, "IF_NC_OR_NZ", "IF_NC_OR_NZ");
+    add(TOK_IF_NOT_11, "IF_NOT_11", "IF_NOT_11");
+    add(TOK_IF_Z_AND_C, "IF_Z_AND_C", "IF_Z_AND_C");
+    add(TOK_IF_C_AND_Z, "IF_C_AND_Z", "IF_C_AND_Z");
+    add(TOK_IF_11, "IF_11", "IF_11");
+    add(TOK_IF_Z_EQ_C, "IF_Z_EQ_C", "IF_Z_EQ_C");
+    add(TOK_IF_C_EQ_Z, "IF_C_EQ_Z", "IF_C_EQ_Z");
+    add(TOK_IF_SAME, "IF_SAME", "IF_SAME");
+    add(TOK_IF_Z, "IF_Z", "IF_Z");
+    add(TOK_IF_E, "IF_E", "IF_E");
+    add(TOK_IF_X1, "IF_X1", "IF_X1");
+    add(TOK_IF_Z_OR_NC, "IF_Z_OR_NC", "IF_Z_OR_NC");
+    add(TOK_IF_NC_OR_Z, "IF_NC_OR_Z", "IF_NC_OR_Z");
+    add(TOK_IF_NOT_10, "IF_NOT_10", "IF_NOT_10");
+    add(TOK_IF_C, "IF_C", "IF_C");
+    add(TOK_IF_B, "IF_B", "IF_B");
+    add(TOK_IF_LT, "IF_LT", "IF_LT");
+    add(TOK_IF_1X, "IF_1X", "IF_1X");
+    add(TOK_IF_NZ_OR_C, "IF_NZ_OR_C", "IF_NZ_OR_C");
+    add(TOK_IF_C_OR_NZ, "IF_C_OR_NZ", "IF_C_OR_NZ");
+    add(TOK_IF_NOT_01, "IF_NOT_01", "IF_NOT_01");
+    add(TOK_IF_Z_OR_C, "IF_Z_OR_C", "IF_Z_OR_C");
+    add(TOK_IF_C_OR_Z, "IF_C_OR_Z", "IF_C_OR_Z");
+    add(TOK_IF_BE, "IF_BE", "IF_BE");
+    add(TOK_IF_LE, "IF_LE", "IF_LE");
+    add(TOK_IF_NOT_00, "IF_NOT_00", "IF_NOT_00");
+    add(TOK_IF_ALWAYS, "IF_ALWAYS", "IF_ALWAYS");
+
     add(TOK_ASSIGN, ":=", ":=");
     add(TOK_OP_XOR, "^^", "XOR (^^)");
     add(TOK_OP_OR, "||", "OR (||)");
@@ -1029,6 +1079,58 @@ const QList<PropToken> g_keywords = {
     TOK_AUGS,
     TOK_AUGD,
     TOK__RET_,
+};
+
+const QList<PropToken> g_conditionals = {
+    TOK_IF_NZ_AND_NC,
+    TOK_IF_NC_AND_NZ,
+    TOK_IF_A,
+    TOK_IF_GT,
+    TOK_IF_00,
+    TOK_IF_Z_AND_NC,
+    TOK_IF_NC_AND_Z,
+    TOK_IF_01,
+    TOK_IF_NC,
+    TOK_IF_AE,
+    TOK_IF_GE,
+    TOK_IF_0X,
+    TOK_IF_NZ_AND_C,
+    TOK_IF_C_AND_NZ,
+    TOK_IF_10,
+    TOK_IF_NZ,
+    TOK_IF_NE,
+    TOK_IF_X0,
+    TOK_IF_Z_NE_C,
+    TOK_IF_C_NE_Z,
+    TOK_IF_DIFF,
+    TOK_IF_NZ_OR_NC,
+    TOK_IF_NC_OR_NZ,
+    TOK_IF_NOT_11,
+    TOK_IF_Z_AND_C,
+    TOK_IF_C_AND_Z,
+    TOK_IF_11,
+    TOK_IF_Z_EQ_C,
+    TOK_IF_C_EQ_Z,
+    TOK_IF_SAME,
+    TOK_IF_Z,
+    TOK_IF_E,
+    TOK_IF_X1,
+    TOK_IF_Z_OR_NC,
+    TOK_IF_NC_OR_Z,
+    TOK_IF_NOT_10,
+    TOK_IF_C,
+    TOK_IF_B,
+    TOK_IF_LT,
+    TOK_IF_1X,
+    TOK_IF_NZ_OR_C,
+    TOK_IF_C_OR_NZ,
+    TOK_IF_NOT_01,
+    TOK_IF_Z_OR_C,
+    TOK_IF_C_OR_Z,
+    TOK_IF_BE,
+    TOK_IF_LE,
+    TOK_IF_NOT_00,
+    TOK_IF_ALWAYS,
 };
 
 const QList<PropToken> g_sections = {
