@@ -67,6 +67,7 @@ QFlexProp::QFlexProp(QWidget *parent)
     , m_local_echo(false)
     , m_flexspin_binary()
     , m_flexspin_include_paths()
+    , m_flexspin_quiet(true)
     , m_flexspin_optimize(1)
     , m_flexspin_listing(false)
     , m_flexspin_warnings(true)
@@ -367,6 +368,7 @@ void QFlexProp::load_settings()
     QStringList include_paths_default;
     include_paths_default += QString("%1/include").arg(p2tools_path);
     m_flexspin_include_paths = s.value(id_flexspin_include_paths, include_paths_default).toStringList();
+    m_flexspin_quiet = s.value(id_flexspin_quiet, true).toBool();
     m_flexspin_optimize = s.value(id_flexspin_optimize, 1).toInt(&ok);
     if (!ok) {
 	m_flexspin_optimize = 1;
@@ -413,6 +415,7 @@ void QFlexProp::save_settings()
     s.beginGroup(id_grp_flexspin);
     s.setValue(id_flexspin_binary, m_flexspin_binary);
     s.setValue(id_flexspin_include_paths, m_flexspin_include_paths);
+    s.setValue(id_flexspin_quiet, m_flexspin_quiet);
     s.setValue(id_flexspin_optimize, m_flexspin_optimize);
     s.setValue(id_flexspin_listing, m_flexspin_listing);
     s.setValue(id_flexspin_warnings, m_flexspin_warnings);
@@ -967,11 +970,11 @@ int QFlexProp::insert_tab(const QString& filename)
     ui->tabWidget->insertTab(curtab, tab, title);
     ui->tabWidget->setCurrentIndex(curtab);
 
-    // Make the splitter bottom (text browser) height 1/6th
+    // Make the splitter bottom (text browser) height 1/4th
     // its default height of half the height of the tab
     QList<int> sizes = spl->sizes();
-    sizes[0] += sizes[1] * 5 / 6;
-    sizes[1] = sizes[1] / 6;
+    sizes[0] += sizes[1] * 3 / 4;
+    sizes[1] = sizes[1] / 4;
     spl->setSizes(sizes);
 
     return curtab;
@@ -1186,6 +1189,7 @@ void QFlexProp::on_action_Configure_flexspin_triggered()
     FlexspinDlg::Settings f;
     f.binary = m_flexspin_binary;
     f.include_paths = m_flexspin_include_paths;
+    f.quiet = m_flexspin_quiet;
     f.optimize = m_flexspin_optimize;
     f.listing = m_flexspin_listing;
     f.warnings = m_flexspin_warnings;
@@ -1200,6 +1204,7 @@ void QFlexProp::on_action_Configure_flexspin_triggered()
 
     f = dlg.settings();
     m_flexspin_binary = f.binary;
+    m_flexspin_quiet = f.quiet;
     m_flexspin_include_paths = f.include_paths;
     m_flexspin_optimize = f.optimize;
     m_flexspin_listing = f.listing;
@@ -1212,6 +1217,7 @@ void QFlexProp::on_action_Configure_flexspin_triggered()
     s.beginGroup(id_grp_flexspin);
     s.setValue(id_flexspin_binary, m_flexspin_binary);
     s.setValue(id_flexspin_include_paths, m_flexspin_include_paths);
+    s.setValue(id_flexspin_quiet, m_flexspin_quiet);
     s.setValue(id_flexspin_optimize, m_flexspin_optimize);
     s.setValue(id_flexspin_listing, m_flexspin_listing);
     s.setValue(id_flexspin_warnings, m_flexspin_warnings);
@@ -1256,7 +1262,7 @@ QString QFlexProp::quoted(const QString& src, const QChar quote)
  * @param p_binary pointer to a QByteArray for the binary result
  * @param p_p2asm pointer to a QString for the p2asm output
  * @param p_lst pointer to a QString for the listing
- * @return
+ * @return true on success, or false on error
  */
 bool QFlexProp::flexspin(QByteArray* p_binary, QString* p_p2asm, QString* p_lst)
 {
@@ -1274,18 +1280,14 @@ bool QFlexProp::flexspin(QByteArray* p_binary, QString* p_p2asm, QString* p_lst)
     // compile for Prop2
     args += QStringLiteral("-2");
 
+    // quiet mode if enabled
+    if (m_flexspin_quiet)
+	args += QStringLiteral("-q");
+
     // append include paths
     foreach(const QString& include_path, m_flexspin_include_paths) {
 	// We need to quote paths with embedded spaces (e.g. Windows)
 	args += QString("-I %1").arg(quoted(include_path));
-    }
-
-    // append a HUB address if configured
-    if (m_flexspin_hub_address > 0) {
-	args += QString("-H %1").arg(m_flexspin_hub_address, 4, 16, QChar('0'));
-	// Add flag for skip coginit
-	if (m_flexspin_skip_coginit)
-	    args += QStringLiteral("-E");
     }
 
     // generate a listing if enabled
@@ -1299,6 +1301,14 @@ bool QFlexProp::flexspin(QByteArray* p_binary, QString* p_p2asm, QString* p_lst)
     // add option for errors if enabled
     if (m_flexspin_errors)
 	args += QStringLiteral("-Werror");
+
+    // append a HUB address if configured
+    if (m_flexspin_hub_address > 0) {
+	args += QString("-H %1").arg(m_flexspin_hub_address, 4, 16, QChar('0'));
+	// Add flag for skip coginit
+	if (m_flexspin_skip_coginit)
+	    args += QStringLiteral("-E");
+    }
 
     // add source filename
     args += src.fileName();

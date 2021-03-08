@@ -22,6 +22,7 @@ public:
     struct Settings {
 	QString binary;
 	QStringList include_paths;
+	bool quiet;
 	int optimize;
 	bool listing;
 	bool warnings;

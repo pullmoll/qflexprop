@@ -118,6 +118,7 @@ private:
 
     QString m_flexspin_binary;
     QStringList m_flexspin_include_paths;
+    bool m_flexspin_quiet;
     int m_flexspin_optimize;
     bool m_flexspin_listing;
     bool m_flexspin_warnings;

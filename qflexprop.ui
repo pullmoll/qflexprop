@@ -339,12 +339,12 @@
   </action>
   <action name="action_Show_listing">
    <property name="text">
-    <string>Show &amp;listing (P2ASM)</string>
+    <string>Show &amp;listing (LST)</string>
    </property>
   </action>
   <action name="action_Show_binary">
    <property name="text">
-    <string>Show &amp;binary (DAT)</string>
+    <string>Show &amp;binary data</string>
    </property>
   </action>
   <action name="action_Settings">

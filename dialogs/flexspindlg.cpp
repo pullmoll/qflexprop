@@ -44,6 +44,7 @@ FlexspinDlg::Settings FlexspinDlg::settings() const
     Settings s;
     bool ok;
     s.binary = ui->le_flexspin->text();
+    s.quiet = ui->cb_quiet->isChecked();
     s.optimize = ui->le_optimize->text().toInt(&ok);
     if (!ok)
 	s.optimize = 0;
@@ -66,6 +67,7 @@ void FlexspinDlg::set_settings(const FlexspinDlg::Settings& s)
 {
     ui->le_flexspin->setText(s.binary);
     ui->le_optimize->setText(QString::number(s.optimize));
+    ui->cb_quiet->setChecked(s.quiet);
     ui->lw_include_paths->clear();
     foreach(const QString& path, s.include_paths)
 	ui->lw_include_paths->addItem(path);
@@ -98,6 +100,8 @@ void FlexspinDlg::le_hubaddress_changed(const QString& address)
     if (!ok || address.isEmpty()) {
 	ui->le_hubaddress->setStyleSheet(QLatin1String("color: red;"));
 	addr = 0;
+    } else if (addr > 0x3ff) {
+	ui->le_hubaddress->setStyleSheet(QLatin1String("color: lightred;"));
     } else {
 	ui->le_hubaddress->setStyleSheet(QString());
     }

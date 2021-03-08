@@ -361,7 +361,10 @@ void SerTerm::sendfile_triggered(bool checked)
 	while (!str.atEnd()) {
 	    QString line = str.readLine();
 	    QByteArray utf8 =  line.toUtf8() + '\n';
-	    write(utf8);
+	    emit term_response(utf8);
+	    if (m_local_echo) {
+		ui->vterm->write(utf8);
+	    }
 	    loop.processEvents();
 	}
 	file.close();

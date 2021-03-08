@@ -84,6 +84,7 @@ const QLatin1String p2tools_path("");
 #endif
 const QLatin1String id_grp_flexspin("flexspin");
 const QLatin1String id_flexspin_binary("binary");
+const QLatin1String id_flexspin_quiet("quiet");
 const QLatin1String id_flexspin_include_paths("include_paths");
 const QLatin1String id_flexspin_optimize("optimize");
 const QLatin1String id_flexspin_listing("listing");

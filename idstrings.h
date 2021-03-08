@@ -89,6 +89,7 @@ extern const QLatin1String p2tools_path;
 extern const QLatin1String id_grp_flexspin;
 extern const QLatin1String id_flexspin_binary;
 extern const QLatin1String id_flexspin_include_paths;
+extern const QLatin1String id_flexspin_quiet;
 extern const QLatin1String id_flexspin_optimize;
 extern const QLatin1String id_flexspin_listing;
 extern const QLatin1String id_flexspin_warnings;
