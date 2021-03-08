@@ -10,7 +10,7 @@
 #include "propconst.h"
 
 /**
- * @file Propeller 2 token class
+ * @file propconst.cpp Propeller 2 token class
  *
  * This lists (a subset of) token strings used with Propeller 2
  * editor's supported languages.

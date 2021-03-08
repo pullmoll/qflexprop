@@ -31,7 +31,7 @@ typedef struct {
 
 /**
  * @brief The propEdit class is derived from the QPlainTextEdit
- * and offers syntax highlighting and line number @ref Options.
+ * and offers syntax highlighting and line number options.
  */
 class PropEdit : public QPlainTextEdit
 {
