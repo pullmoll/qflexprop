@@ -71,6 +71,7 @@ extern const QLatin1String id_fe;
 extern const QLatin1String id_pe;
 extern const QLatin1String id_pwr;
 
+extern const QLatin1String id_progress;
 extern const QLatin1String id_download_path;
 
 extern const QLatin1String str_unknown;

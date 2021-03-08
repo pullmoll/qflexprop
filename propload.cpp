@@ -102,12 +102,14 @@ quint32 PropLoad::compute_checksum(const QByteArray& data)
  */
 bool PropLoad::load_single_file_base64(const QByteArray& data, bool patch_mode)
 {
+    static const QByteArray::Base64Options opts = QByteArray::Base64Encoding;
     int totnum = 0;
     quint32 checksum = 0;
 
     if (m_verbose)
 	emit Message(tr("Loading %1 bytes.").arg(data.size()));
 
+    emit Progress(0, data.size());
     QByteArray prop_txt("> Prop_Txt 0 0 0 0");
     if (m_verbose)
 	emit Message(tr("Sending Prop_Txt header '%1'.")
@@ -137,7 +139,7 @@ bool PropLoad::load_single_file_base64(const QByteArray& data, bool patch_mode)
 	}
 
 	// Send the block as hex bytes
-	QByteArray buffer = QByteArray("> ") + block.toBase64(QByteArray::OmitTrailingEquals);
+	QByteArray buffer = QByteArray("> ") + block.toBase64(opts);
 	if (m_verbose)
 	    emit Message(tr("Send block offset 0x%1 '%2'.")
 		     .arg(offs, 4, 16, QChar('0'))
@@ -156,6 +158,7 @@ bool PropLoad::load_single_file_base64(const QByteArray& data, bool patch_mode)
 		       .arg(buffer.size()));
 	    return false;
 	}
+	emit Progress(offs, data.size());
 	totnum += block.size();
     }
 
@@ -163,7 +166,7 @@ bool PropLoad::load_single_file_base64(const QByteArray& data, bool patch_mode)
 	checksum = Prop - checksum;
 	QByteArray checksum_data(4, 0);
 	util.put_le32(checksum_data, 0, checksum);
-	QByteArray buffer = QByteArray(" ") + checksum_data.toBase64(QByteArray::OmitTrailingEquals) + QByteArray("?");
+	QByteArray buffer = QByteArray(" ") + checksum_data.toBase64(opts) + QByteArray("?");
 
 	if (m_verbose)
 	    emit Message(tr("Send checksum '%1'.")
@@ -193,7 +196,7 @@ bool PropLoad::load_single_file_base64(const QByteArray& data, bool patch_mode)
 	if (buffer.length() != 1 || buffer[0] != '.') {
 	    QString message = tr("Failed to transfer %1 bytes of data.")
 			      .arg(data.size());
-	    message += QChar::LineFeed + tr("Error respone was '%1'")
+	    message += QChar::LineFeed + tr("Error response was '%1'")
 		       .arg(QString::fromLatin1(buffer));
 	    emit Error(message);
 	    return false;
@@ -213,6 +216,7 @@ bool PropLoad::load_single_file_base64(const QByteArray& data, bool patch_mode)
 	    return false;
 	}
     }
+    emit Progress(data.size(), data.size());
 
     emit Message(tr("%1 bytes of data loaded.")
 		 .arg(data.size()));
@@ -235,6 +239,7 @@ bool PropLoad::load_single_file_hex(const QByteArray& data, bool patch_mode)
 	emit Message(tr("Loading %1 bytes.")
 		     .arg(data.size()));
 
+    emit Progress(0, data.size());
     QByteArray prop_hex("> Prop_Hex 0 0 0 0");
     if (m_verbose)
 	emit Message(tr("Sending Prop_Hex header '%1'.").arg(QString::fromLatin1(prop_hex)));
@@ -282,6 +287,7 @@ bool PropLoad::load_single_file_hex(const QByteArray& data, bool patch_mode)
 		       .arg(buffer.size()));
 	    return false;
 	}
+	emit Progress(offs, data.size());
 	totnum += block.size();
     }
 
@@ -319,7 +325,7 @@ bool PropLoad::load_single_file_hex(const QByteArray& data, bool patch_mode)
 	if (buffer.length() != 1 || buffer[0] != '.') {
 	    QString message = tr("Failed to transfer %1 bytes of data.")
 			      .arg(data.size());
-	    message += QChar::LineFeed + tr("Error respone was '%1'")
+	    message += QChar::LineFeed + tr("Error response was '%1'")
 		       .arg(QString::fromLatin1(buffer));
 	    emit Error(message);
 	    return false;
@@ -339,6 +345,7 @@ bool PropLoad::load_single_file_hex(const QByteArray& data, bool patch_mode)
 	    return false;
 	}
     }
+    emit Progress(data.size(), data.size());
 
     if (m_verbose)
 	emit Message(tr("%1 bytes of data loaded.")

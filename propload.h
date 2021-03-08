@@ -44,6 +44,7 @@ public slots:
 signals:
     void Error(const QString& text);
     void Message(const QString& text);
+    void Progress(qint64 value, qint64 total);
 
 private:
     //! The magic constant for checksums to be subtracted from:

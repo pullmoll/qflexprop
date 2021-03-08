@@ -18,6 +18,7 @@
 #include <QCryptographicHash>
 #include <QScrollArea>
 #include <QSplitter>
+#include <QProgressBar>
 #include <QTextBrowser>
 #include <QVBoxLayout>
 #include <cinttypes>
@@ -500,6 +501,9 @@ void QFlexProp::tab_changed(int index)
     ui->action_Build->setEnabled(enable);
     ui->action_Upload->setEnabled(enable);
     ui->action_Run->setEnabled(enable);
+    if (index == ui->tabWidget->count() - 1) {
+	ui->terminal->setFocus();
+    }
 }
 
 void QFlexProp::log_message(const QString& message)
@@ -717,6 +721,11 @@ void QFlexProp::setup_statusbar()
 	lbl->setToolTip(pinout_leds.value(key));
 	ui->statusbar->addPermanentWidget(lbl);
     }
+
+    QProgressBar* pb_progress = new QProgressBar();
+    pb_progress->setObjectName(id_progress);
+    pb_progress->setToolTip("Shows progress of the current activity.");
+    ui->statusbar->addPermanentWidget(pb_progress);
 
     QComboBox* cb_status = ui->statusbar->findChild<QComboBox*>(id_status);
     delete cb_status;
@@ -1437,19 +1446,27 @@ void QFlexProp::on_action_Run_triggered()
 
     m_transfer.lock();
     st->reset();
-    PropLoad phex(m_dev, this);
-    phex.set_verbose(ui->action_Verbose->isChecked());
+    PropLoad propload(m_dev, this);
+    // base64 encoding fails with checksum
+    // propload.set_mode(PropLoad::Prop_Txt);
+    propload.set_verbose(ui->action_Verbose->isChecked());
     // phex.set_use_checksum(false);
-    phex.setProperty(id_process_tb, QVariant::fromValue(tb));
-    connect(&phex, &PropLoad::Error,
+    propload.setProperty(id_process_tb, QVariant::fromValue(tb));
+    connect(&propload, &PropLoad::Error,
 	    this, &QFlexProp::printError);
-    connect(&phex, &PropLoad::Message,
+    connect(&propload, &PropLoad::Message,
 	    this, &QFlexProp::printMessage);
-    phex.load_file(binary);
+    connect(&propload, &PropLoad::Progress,
+	    this, &QFlexProp::Progress);
+    propload.load_file(binary);
     m_transfer.unlock();
     if (ui->action_Switch->isChecked()) {
 	// Select the terminal tab
 	ui->tabWidget->setCurrentIndex(ui->tabWidget->count() - 1);
+    }
+    // Process data which may have been received while signal handling was blocked
+    if (m_dev->bytesAvailable() > 0) {
+	dev_ready_read();
     }
 }
 
@@ -1503,5 +1520,20 @@ void QFlexProp::printMessage(const QString& message)
 	return;
     tb->setTextColor(Qt::black);
     tb->append(message);
+    loop.processEvents();
+}
+
+void QFlexProp::Progress(qint64 value, qint64 total)
+{
+    QEventLoop loop(this);
+    QProgressBar* pb = ui->statusbar->findChild<QProgressBar*>(id_progress);
+    if (!pb)
+	return;
+    while (total >= INT32_MAX) {
+	total >>= 10;
+	value >>= 10;
+    }
+    pb->setRange(0, total);
+    pb->setValue(value);
     loop.processEvents();
 }

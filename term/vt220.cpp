@@ -127,8 +127,10 @@ QString vt220::font_family() const
 
 void vt220::set_font_family(const QString& family)
 {
+    if (m_font_family == family)
+	return;
     m_font_family = family;
-    set_font(font_w, font_h, font_d);
+    set_font(m_font_w, m_font_h, m_font_d);
     term_set_size(m_width, m_height);
 }
 
@@ -1641,6 +1643,8 @@ void vt220::set_font(int width, int height, int descend)
 #endif
     setFont(font);
     m_glyphs = vtGlyphs(font, m_font_w, m_font_h);
+    resize(m_width * m_font_w, m_height * m_font_h);
+    emit UpdateSize();
 }
 
 /**
@@ -2045,7 +2049,7 @@ void vt220::term_reset(Terminal term, int width, int height)
     m_cursor.phase = 0;
     m_cursor.on = false;
 
-    update(0, 0, m_width * m_font_w, m_height * m_font_h);
+    resize(m_width * m_font_w, m_height * m_font_h);
     emit UpdateSize();
 }
 
@@ -2053,8 +2057,10 @@ void vt220::term_set_size(int width, int height)
 {
     if (width <= 0)
 	width = m_deccolm;
+
     if (height <= 0)
-	height = 25;
+	height = m_height;
+
     for (int y = 0; y < m_height; y++) {
 	vtLine& line = m_screen[y];
 	line.resize(width);
@@ -2095,6 +2101,7 @@ void vt220::term_set_size(int width, int height)
     m_height = height;
     m_top = 0;
     m_bottom = height;
+    resize(m_width * m_font_w, m_height * m_font_h);
     emit UpdateSize();
 }
 

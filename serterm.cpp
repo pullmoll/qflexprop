@@ -34,8 +34,6 @@ SerTerm::SerTerm(QWidget *parent)
 {
     ui->setupUi(this);
     load_config();
-    ui->vterm->set_font_family(m_font_family);
-    ui->vterm->set_zoom(m_zoom);
     setup_terminal();
     setFocusPolicy(Qt::StrongFocus);
 }
@@ -109,6 +107,7 @@ void SerTerm::set_zoom(int percent)
 void SerTerm::reset()
 {
     reset_prop();
+    m_dev->readAll();
 }
 void SerTerm::term_clear()
 {
@@ -155,16 +154,16 @@ void SerTerm::zoom_out()
 void SerTerm::setup_terminal()
 {
     bool ok;
-    ok = connect(ui->vterm, SIGNAL(UpdateSize()),
-	    ui->scrollArea, SLOT(UpdateSize()),
+
+    ok = connect(ui->vterm, &vt220::UpdateSize,
+	    ui->scrollArea, &vtScrollArea::UpdateSize,
 	    Qt::UniqueConnection);
     Q_ASSERT(ok);
-    ok = connect(ui->vterm, SIGNAL(UpdateCursor(QRect)),
-	    ui->scrollArea, SLOT(UpdateCursor(QRect)),
+
+    ok = connect(ui->vterm, &vt220::UpdateCursor,
+	    ui->scrollArea, &vtScrollArea::UpdateCursor,
 	    Qt::UniqueConnection);
     Q_ASSERT(ok);
-    ui->vterm->set_font_family(m_font_family);
-    ui->vterm->set_zoom(m_zoom);
 
     ui->toolbar->setIconSize(QSize(20, 20));
     ui->toolbar->setToolButtonStyle(Qt::ToolButtonIconOnly);
@@ -198,6 +197,9 @@ void SerTerm::setup_terminal()
 	    this, &SerTerm::sendfile_triggered);
     Q_ASSERT(ok);
     ui->toolbar->addAction(act_sendfile);
+
+    ui->vterm->set_font_family(m_font_family);
+    ui->vterm->set_zoom(m_zoom);
 }
 
 void SerTerm::setup_signals()

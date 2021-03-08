@@ -70,6 +70,7 @@ const QLatin1String id_fe("fe");
 const QLatin1String id_pe("pe");
 const QLatin1String id_pwr("pwr");
 
+const QLatin1String id_progress("progress");
 const QLatin1String id_download_path("downloads");
 
 const QLatin1String str_unknown("?");

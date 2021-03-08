@@ -92,9 +92,9 @@ protected:
     void timerEvent(QTimerEvent* event) override;
 
 private:
-    static constexpr int font_w = 8;
-    static constexpr int font_h = 15;
-    static constexpr int font_d = 3;
+    static constexpr int font_w = 9;
+    static constexpr int font_h = 16;
+    static constexpr int font_d = 4;
     // 0d00ff81
     static constexpr quint32 CTRL_ACTION =
 	    (1u << NUL) |

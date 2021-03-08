@@ -99,6 +99,8 @@ private slots:
     void printError(const QString& message);
     void printMessage(const QString& message);
 
+    void Progress(qint64 value, qint64 total);
+
 private:
     Ui::QFlexProp *ui;
     QIODevice* m_dev;				//!< serial port (or tty)
