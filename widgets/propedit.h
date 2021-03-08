@@ -90,10 +90,10 @@ public:
     QString filename() const;
     FileType filetype() const;
     QString filetype_name() const;
-    bool load(const QString& filename);
-    bool save(const QString& filename = QString());
 
 public slots:
+    bool load(const QString& filename = QString());
+    bool save(const QString& filename = QString());
     void setFont(const QFont& font);
     void setText(const QString& text);
     void setFilename(const QString& filename);

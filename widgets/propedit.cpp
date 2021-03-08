@@ -8,6 +8,7 @@
  *
  ***************************************************************************************/
 #include <QCryptographicHash>
+#include <QDateTime>
 #include <QFile>
 #include <QTextStream>
 #include "propedit.h"
@@ -47,7 +48,7 @@ PropEdit::PropEdit(QWidget *parent,
 	m_highlighter = new PropHighlighter(document(), m_options);
 	highlight_current_line();
     }
-    setTabStopDistance(fontMetrics().averageCharWidth() * m_tabsize);
+    setFont(font());
 }
 
 /**
@@ -146,7 +147,13 @@ void PropEdit::setText(const QString& text)
     if (old_hash == new_hash)
 	return;
     setProperty(prop_sha256, new_hash);
+    delete m_highlighter;
+    m_highlighter = nullptr;
     setPlainText(text);
+    if (m_options.testFlag(PROPED_DO_HIGHLIGHT)) {
+	m_highlighter = new PropHighlighter(document(), m_options);
+	highlight_current_line();
+    }
 }
 
 void PropEdit::setFilename(const QString& filename)
@@ -168,19 +175,18 @@ void PropEdit::gotoLineNumber(int lnum)
 
 bool PropEdit::load(const QString& filename)
 {
-    QFileInfo info(filename);
+    QString load_filename = filename.isEmpty() ? property(prop_filename).toString() : filename;
+    QFileInfo info(load_filename);
     QFile file(info.absoluteFilePath());
     if (file.open(QIODevice::ReadOnly)) {
-	QCryptographicHash sha256(QCryptographicHash::Sha256);
-	QByteArray data = file.readAll();
+	QTextStream str(&file);
+	str.setCodec("UTF-8");
+	QString text = str.readAll();
 	file.close();
-	QByteArray new_hash = sha256.result();
-	sha256.addData(data);
-	setProperty(prop_sha256, new_hash);
-	setProperty(prop_filename, filename);
+	setProperty(prop_filename, info.absoluteFilePath());
 	FileType filetype = util.filetype(info.fileName());
 	setProperty(prop_filetype, filetype);
-	setText(QString::fromUtf8(data));
+	setText(text);
 	return true;
     }
     return false;
@@ -313,6 +319,12 @@ void PropEdit::line_number_area_paint_event(QPaintEvent *event)
     QPainter painter(m_lineno_area);
     painter.setFont(font());
     painter.fillRect(event->rect(), color_line_number_area);
+
+    // draw a vertical line at the right edge
+    const int x = event->rect().right();
+    const int y1 = event->rect().top();
+    const int y2 = event->rect().bottom();
+    painter.drawLine(x, y1, x, y2);
 
     QTextBlock block = firstVisibleBlock();
     int blockNumber = block.blockNumber();
@@ -469,11 +481,11 @@ PropHighlighter::PropHighlighter(QTextDocument *doc, PropEdit::Options options)
 	HighlightingRule rule;
 	multiLineCommentFormat.setBackground(QColor(color_background));
 	multiLineCommentFormat.setForeground(QColor(color_comment));
-	commentStartExpression = QRegExp(QRegExp::escape("{"));
+	commentStartExpression = QRegExp(QString("%1+").arg(QRegExp::escape("{")));
 	rule.pattern = commentStartExpression;
 	rule.format = multiLineCommentFormat;
 	highlightingRules.append(rule);
-	commentEndExpression = QRegExp(QRegExp::escape("}"));
+	commentEndExpression = QRegExp(QString("%1+").arg(QRegExp::escape("}")));
     }
 
     // Enable In-Line Comments ? enclosed in "{" and "}"
