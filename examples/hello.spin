@@ -5,7 +5,7 @@
 
 CON
 #ifdef __P2__
-  _clkfreq = 160_000_000
+  _clkfreq = 240_000_000
   rx_pin = 63
   tx_pin = 62
 #else
@@ -25,5 +25,5 @@ OBJ
 
 PUB hello
   ser.start(rx_pin, tx_pin, 0, baud)
-  repeat
+  repeat 100
     ser.printf("Hello, world!\n")

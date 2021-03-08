@@ -114,20 +114,20 @@ CON
 ''   P2 ROM SERIAL ROUTINES (HUBEXEC)
 '' +--------------------------------------------------------------------------+
   _SerialInit      = $fcab8     ' Serial Initialise     (lmm_x & lmm_bufad must be set first)
-  _HubTxCR         = $fcae4     ' Sends <cr><lf>        (overwrites lmm_x)
-  _HubTxRev        = $fcaec     ' Sends lmm_x with bytes reversed
-  _HubTx           = $fcaf0     ' Sends lmm_x           (can be up to 4 bytes)
-  _HubHexRev       = $fcb24     ' Sends lmm_x with bytes reversed as Hex char(s) as defined in lmm_f
-  _HubHex8         = $fcb28     ' Sends lmm_x as Hex char(s) after setting lmm_f as 8 hex chars
-  _HubHex          = $fcb2c     ' Sends lmm_x as Hex char(s) as defined in lmm_f
-  _HubTxStrVer     = $fcb9c     ' Sends $0 terminated string at lmm_p address after setting lmm_p=##_str_vers
-  _HubTxString     = $fcba4     ' Sends $0 terminated string at lmm_p address
-  _HubListA2H      = $fcbc4     ' List/Dump line(s) from lmm_p address to lmm_p2 address after setting lmm_f=#_LIST+_ADDR2 
-  _HubList         = $fcbc8     ' List/Dump line(s) from lmm_p address to lmm_p2 address according to lmm_f
-  _HubRx           = $fcb10     ' Recv char into lmm_x
-  _HubRxStrMon     = $fccc4     ' Recv string into lmm_bufad address after setting prompt=lmm_x=#"*" & params=lmm_f=#_RXSTRING+_ECHO_+_PROMPT
-  _HubRxString     = $fcccc     ' Recv string into lmm_p/lmm_bufad address according to params in lmm_f
-  _HubMonitor      = $fcd78     ' Calls the Monitor; uses lmm_bufad as the input buffer address
+  _hubTxCR         = $fcae4     ' Sends <cr><lf>        (overwrites lmm_x)
+  _hubTxRev        = $fcaec     ' Sends lmm_x with bytes reversed
+  _hubTx           = $fcaf0     ' Sends lmm_x           (can be up to 4 bytes)
+  _hubHexRev       = $fcb24     ' Sends lmm_x with bytes reversed as Hex char(s) as defined in lmm_f
+  _hubHex8         = $fcb28     ' Sends lmm_x as Hex char(s) after setting lmm_f as 8 hex chars
+  _hubHex          = $fcb2c     ' Sends lmm_x as Hex char(s) as defined in lmm_f
+  _hubTxStrVer     = $fcb9c     ' Sends $0 terminated string at lmm_p address after setting lmm_p=##_str_vers
+  _hubTxString     = $fcba4     ' Sends $0 terminated string at lmm_p address
+  _hubListA2H      = $fcbc4     ' List/Dump line(s) from lmm_p address to lmm_p2 address after setting lmm_f=#_LIST+_ADDR2 
+  _hubList         = $fcbc8     ' List/Dump line(s) from lmm_p address to lmm_p2 address according to lmm_f
+  _hubRx           = $fcb10     ' Recv char into lmm_x
+  _hubRxStrMon     = $fccc4     ' Recv string into lmm_bufad address after setting prompt=lmm_x=#"*" & params=lmm_f=#_RXSTRING+_ECHO_+_PROMPT
+  _hubRxString     = $fcccc     ' Recv string into lmm_p/lmm_bufad address according to params in lmm_f
+  _hubMonitor      = $fcd78     ' Calls the Monitor; uses lmm_bufad as the input buffer address
   _RdLongCogHub    = $fcf34     ' read cog/lut/hub long from lmm_p address into lmm_x, then lmm_p++
   _str_vers        = $fd014     ' locn of hub string, $0 terminated
 '' +--------------------------------------------------------------------------+
@@ -225,7 +225,7 @@ init_entry      hubset  #0                              ' set 20MHz+ mode
                 call    #_HubTxString
 ''+------[ Load LUT code ]-----------------------------------------------------+
                 setq2   #512-1                          '\ load LUT
-                rdlong  #0, ##@lut_code                 '/
+                rdlong  0, ##@lut_code                 '/
 ''+------[ Jump to HUBEXEC (loads new COG code) ]------------------------------+
                 jmp     #reload_cog                     ' jump to hubexec & reload new cog code
 ''+----------------------------------------------------------------------------+
@@ -3378,7 +3378,7 @@ ed_sbc_hl_hl  {ed 62}   mov     t1, L                           ' HL = HL-HL-CF 
               orgh      $3000
 ''+------[ Load new COG code ]-------------------------------------------------+
 reload_cog      setq    #512-16-1                       '\ re-load COG 
-                rdlong  #0, ##@cog_code                 '/          
+                rdlong  0, ##@cog_code                 '/          
 ''+------[ Start user program ]------------------------------------------------+
                 jmp     #entry                          ' jump to user program
 ''+------[ Program identifier (must be in hub) ]-------------------------------+

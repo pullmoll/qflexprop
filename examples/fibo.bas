@@ -49,7 +49,7 @@ _setbaud(_BAUD)
 pause
 print "BASIC fibo demo"
 
-for i = 1 to 12
+for i = 1 to 20
   cycles = getcycles()
   var x = fibo(i)
   cycles = getcycles() - cycles
