@@ -173,27 +173,28 @@ bool PropEdit::load(const QString& filename)
     return false;
 }
 
-bool PropEdit::save(const QString& save_filename)
+bool PropEdit::save(const QString& filename)
 {
-    QString filename = save_filename.isEmpty() ?
+    QString save_filename = filename.isEmpty() ?
 			   property(prop_filename).toString() :
-			   save_filename;
-    QString backup = QString("%1~").arg(filename);
+			   filename;
+    QString backup = QString("%1~").arg(save_filename);
     QFile::remove(backup);
-    QFile::rename(filename, backup);
-    QFile file(filename);
+    QFile::rename(save_filename, backup);
+    QFileInfo info(save_filename);
+    QFile file(info.absoluteFilePath());
     if (file.open(QIODevice::WriteOnly)) {
-	QString text = QPlainTextEdit::toPlainText();
+	QString text = toPlainText();
 	QCryptographicHash sha256(QCryptographicHash::Sha256);
 	sha256.addData(text.toUtf8());
-	QByteArray hash = sha256.result();
+	QByteArray new_hash = sha256.result();
 	QTextStream str(&file);
 	str.setCodec("UTF-8");
-	setPlainText(text);
+	str << text;
 	file.close();
-	setProperty(prop_sha256, hash);
-	setProperty(prop_filename, filename);
-	FileType filetype = util.filetype(filename);
+	setProperty(prop_sha256, new_hash);
+	setProperty(prop_filename, info.absoluteFilePath());
+	FileType filetype = util.filetype(info.fileName());
 	setProperty(prop_filetype, filetype);
 	return true;
     }

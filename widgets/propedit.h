@@ -87,7 +87,7 @@ public:
     FileType filetype() const;
     QString filetype_name() const;
     bool load(const QString& filename);
-    bool save(const QString& save_filename = QString());
+    bool save(const QString& filename = QString());
 
 public slots:
     void setFont(const QFont& font);

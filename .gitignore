@@ -6,6 +6,7 @@
 *.binary
 *.lst
 *.bak
+*~
 
 # Doxygen log and output
 doc/*

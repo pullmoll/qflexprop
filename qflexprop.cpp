@@ -1027,7 +1027,7 @@ void QFlexProp::on_action_Save_triggered()
 	return;
     }
 
-    if (pe->changed()) {
+    if (!pe->changed()) {
 	QString text = pe->text();
 	QString filename = pe->filename();
 	QFileInfo info(filename);
@@ -1037,13 +1037,13 @@ void QFlexProp::on_action_Save_triggered()
     }
 
     QFileInfo info(pe->filename());
-    if (pe->save()) {
+    if (pe->save(info.absoluteFilePath())) {
 	ui->statusbar->showMessage(tr("Saved file '%1' (%2 Bytes).")
-				   .arg(info.fileName())
+				   .arg(info.absoluteFilePath())
 				   .arg(locale.toString(info.size())));
     } else {
 	ui->statusbar->showMessage(tr("Could not save file '%1'.")
-				   .arg(info.fileName()));
+				   .arg(info.absoluteFilePath()));
     }
 }
 
@@ -1068,11 +1068,11 @@ void QFlexProp::on_action_Save_as_triggered()
     QFileInfo info(save_as);
     if (pe->save(save_as)) {
 	ui->statusbar->showMessage(tr("Saved file '%1' (%2 Bytes).")
-				   .arg(info.fileName())
+				   .arg(info.absoluteFilePath())
 				   .arg(locale.toString(info.size())));
     } else {
 	ui->statusbar->showMessage(tr("Could not save file '%1'.")
-				   .arg(info.fileName()));
+				   .arg(info.absoluteFilePath()));
     }
 }
 
