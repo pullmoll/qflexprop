@@ -14,10 +14,10 @@ As of now QFlexProp has been built and tested only on [Void Linux](https://voidl
 
 #### Screenshots
 
-[Screen shot 1](https://github.com/pullmoll/qflexprop/blob/master/screenshots/qflexprop-screenshot-1.png)
-[Screen shot 2](https://github.com/pullmoll/qflexprop/blob/master/screenshots/qflexprop-screenshot-2.png)
-[Screen shot 3](https://github.com/pullmoll/qflexprop/blob/master/screenshots/qflexprop-screenshot-3.png)
-[Screen shot 4](https://github.com/pullmoll/qflexprop/blob/master/screenshots/qflexprop-screenshot-4.png)
-[Screen shot 5](https://github.com/pullmoll/qflexprop/blob/master/screenshots/qflexprop-screenshot-5.png)
-[Screen shot 6](https://github.com/pullmoll/qflexprop/blob/master/screenshots/qflexprop-screenshot-6.png)
-[Screen shot 7](https://github.com/pullmoll/qflexprop/blob/master/screenshots/qflexprop-screenshot-7.png)
+![Screen shot 1](https://github.com/pullmoll/qflexprop/blob/master/screenshots/qflexprop-screenshot-1.png)
+![Screen shot 2](https://github.com/pullmoll/qflexprop/blob/master/screenshots/qflexprop-screenshot-2.png)
+![Screen shot 3](https://github.com/pullmoll/qflexprop/blob/master/screenshots/qflexprop-screenshot-3.png)
+![Screen shot 4](https://github.com/pullmoll/qflexprop/blob/master/screenshots/qflexprop-screenshot-4.png)
+![Screen shot 5](https://github.com/pullmoll/qflexprop/blob/master/screenshots/qflexprop-screenshot-5.png)
+![Screen shot 6](https://github.com/pullmoll/qflexprop/blob/master/screenshots/qflexprop-screenshot-6.png)
+![Screen shot 7](https://github.com/pullmoll/qflexprop/blob/master/screenshots/qflexprop-screenshot-7.png)
