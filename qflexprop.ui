@@ -95,6 +95,7 @@
      <string>&amp;View</string>
     </property>
     <addaction name="action_Show_listing"/>
+    <addaction name="action_Show_intermediate"/>
     <addaction name="action_Show_binary"/>
     <addaction name="separator"/>
     <addaction name="action_Toggle_80_132_mode"/>
@@ -361,6 +362,11 @@
   <action name="action_Show_listing">
    <property name="text">
     <string>Show &amp;listing (LST)</string>
+   </property>
+  </action>
+  <action name="action_Show_intermediate">
+   <property name="text">
+    <string>Show intermediate (P2ASM)</string>
    </property>
   </action>
   <action name="action_Show_binary">

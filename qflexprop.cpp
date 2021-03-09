@@ -1528,8 +1528,19 @@ void QFlexProp::on_action_Show_listing_triggered()
     PropEdit* pe = current_propedit();
     if (!pe)
 	return;
-    TextBrowserDlg dlg(this);
     QString text = pe->property(id_tab_lst).toString();
+    TextBrowserDlg dlg(this);
+    dlg.set_text(text);
+    dlg.exec();
+}
+
+void QFlexProp::on_action_Show_intermediate_triggered()
+{
+    PropEdit* pe = current_propedit();
+    if (!pe)
+	return;
+    QString text = pe->property(id_tab_p2asm).toString();
+    TextBrowserDlg dlg(this);
     dlg.set_text(text);
     dlg.exec();
 }
@@ -1542,9 +1553,9 @@ void QFlexProp::on_action_Show_binary_triggered()
     PropEdit* pe = current_propedit();
     if (!pe)
 	return;
-    TextBrowserDlg dlg(this);
     QByteArray data = pe->property(id_tab_binary).toByteArray();
     QString dump = util.dump(QString(), data);
+    TextBrowserDlg dlg(this);
     dlg.set_text(dump);
     dlg.exec();
 }

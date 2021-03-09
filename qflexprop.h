@@ -91,6 +91,7 @@ private slots:
     void on_action_Configure_flexspin_triggered();
 
     void on_action_Show_listing_triggered();
+    void on_action_Show_intermediate_triggered();
     void on_action_Show_binary_triggered();
     void on_action_Toggle_80_132_mode_triggered();
 
