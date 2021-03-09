@@ -16,38 +16,62 @@ PropLoad::PropLoad(QIODevice* dev, QObject* parent)
 {
 }
 
+/**
+ * @brief Return the verbose flag
+ * @return bool true if verbose
+ */
 bool PropLoad::verbose() const
 {
     return m_verbose;
 }
 
+/**
+ * @brief Return the clock frequency for patching
+ * @return clock frequency
+ */
 quint32 PropLoad::clock_freq() const
 {
     return m_clock_freq;
 }
 
+/**
+ * @brief Return the clock mode for patching
+ * @return clock mode
+ */
 quint32 PropLoad::clock_mode() const
 {
     return m_clock_mode;
 }
 
+/**
+ * @brief Return the user baud rate for patching
+ * @return baud rate
+ */
 quint32 PropLoad::user_baud() const
 {
     return m_user_baud;
 }
 
+/**
+ * @brief Return the use checksum flag
+ * @return bool true if checksum is to be used
+ */
 bool PropLoad::use_checksum() const
 {
     return m_use_checksum;
 }
 
-bool PropLoad::load_file(const QByteArray& data, bool patch_mode)
+/**
+ * @brief Load a
+ * @return bool true if checksum is to be used
+ */
+bool PropLoad::load_data(const QByteArray& data, bool patch_mode)
 {
     switch (m_mode) {
     case Prop_Hex:
-	return load_single_file_hex(data, patch_mode);
+	return load_single_data_hex(data, patch_mode);
     case Prop_Txt:
-	return load_single_file_txt(data, patch_mode);
+	return load_single_data_txt(data, patch_mode);
     }
     emit Error(tr("Invalid PropMode (%2).")
 	       .arg(m_mode));
@@ -108,7 +132,7 @@ quint32 PropLoad::compute_checksum(const QByteArray& data)
  * @param patch_mode if true, patch in the clock frequence, mode, and user baud
  * @return true on success, or false on error
  */
-bool PropLoad::load_single_file_txt(const QByteArray& data, bool patch_mode)
+bool PropLoad::load_single_data_txt(const QByteArray& data, bool patch_mode)
 {
     static const QByteArray::Base64Options opts = QByteArray::OmitTrailingEquals;
     int totnum = 0;
@@ -248,7 +272,7 @@ bool PropLoad::load_single_file_txt(const QByteArray& data, bool patch_mode)
  * @param patch_mode if true, patch in the clock frequence, mode, and user baud
  * @return true on success, or false on error
  */
-bool PropLoad::load_single_file_hex(const QByteArray& data, bool patch_mode)
+bool PropLoad::load_single_data_hex(const QByteArray& data, bool patch_mode)
 {
     int totnum = 0;
     quint32 checksum = 0;
@@ -400,9 +424,9 @@ bool PropLoad::load_single_file(const QString& filename, bool patch_mode)
 	file.close();
 	switch (m_mode) {
 	case Prop_Hex:
-	    return load_single_file_hex(data, patch_mode);
+	    return load_single_data_hex(data, patch_mode);
 	case Prop_Txt:
-	    return load_single_file_txt(data, patch_mode);
+	    return load_single_data_txt(data, patch_mode);
 	}
 	emit Error(tr("Invalid PropMode (%2).")
 		   .arg(m_mode));

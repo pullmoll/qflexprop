@@ -30,7 +30,7 @@ public:
     quint32 user_baud() const;
     bool use_checksum() const;
 
-    bool load_file(const QByteArray& data, bool patch_mode = false);
+    bool load_data(const QByteArray& data, bool patch_mode = false);
     bool load_file(const QString& filename, bool patch_mode = false);
 
 public slots:
@@ -64,7 +64,7 @@ private:
     bool m_use_checksum;    //!< if true, calculate and verify the checksum
 
     quint32 compute_checksum(const QByteArray& data);
-    bool load_single_file_txt(const QByteArray& data, bool patch_mode = false);
-    bool load_single_file_hex(const QByteArray& data, bool patch_mode = false);
+    bool load_single_data_txt(const QByteArray& data, bool patch_mode = false);
+    bool load_single_data_hex(const QByteArray& data, bool patch_mode = false);
     bool load_single_file(const QString& filename, bool patch_mode = false);
 };

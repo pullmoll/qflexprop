@@ -11,13 +11,10 @@
 #include <QDateTime>
 #include <QFile>
 #include <QTextStream>
+#include "idstrings.h"
 #include "propedit.h"
 #include "propconst.h"
 #include "util.h"
-
-static const char prop_sha256[] = "sha256";
-static const char prop_filename[] = "filename";
-static const char prop_filetype[] = "filetype";
 
 PropEdit::PropEdit(QWidget *parent,
 		   const int tabsize,
@@ -364,117 +361,6 @@ PropHighlighter::PropHighlighter(QTextDocument *doc, PropEdit::Options options)
     : QSyntaxHighlighter(doc)
     , m_options(options)
 {
-    //
-    // Highlight section names ?
-    //
-    if (m_options.testFlag(PropEdit::PROPED_USE_SECTIONS)) {
-	HighlightingRule rule;
-	QStringList sections = g_tokens.list(g_sections);
-	sectionsFormat.setFontUnderline(true);
-	sectionsFormat.setBackground(QColor(color_background));
-	sectionsFormat.setForeground(QColor(color_section));
-	rule.pattern = QRegExp(QString("^(%1)")
-			       .arg(sections.join(QChar('|'))));
-	rule.format = sectionsFormat;
-	highlightingRules.append(rule);
-    }
-
-    // Highlight operators?
-    if (m_options.testFlag(PropEdit::PROPED_USE_OPERATORS)) {
-	HighlightingRule rule;
-	operatorFormat.setBackground(QColor(color_background));
-	operatorFormat.setForeground(QColor(color_operator));
-	operatorFormat.setFontWeight(QFont::Bold);
-	QStringList keywords = g_tokens.list_esc(g_operator);
-	rule.pattern = QRegExp(QString("(%1)")
-			       .arg(keywords.join(QChar('|'))),
-			       Qt::CaseInsensitive);
-	rule.format = operatorFormat;
-	highlightingRules.append(rule);
-    }
-
-    // Highlight decimal constant
-    if (m_options.testFlag(PropEdit::PROPED_USE_DEC)) {
-	HighlightingRule rule;
-	decFormat.setBackground(QColor(color_background));
-	decFormat.setForeground(QColor(color_dec));
-	rule.pattern = QRegExp(QString("\\W[0-9_]+\\b"));
-	rule.format = decFormat;
-	highlightingRules.append(rule);
-    }
-
-    // Highlight binary constant
-    if (m_options.testFlag(PropEdit::PROPED_USE_BIN)) {
-	HighlightingRule rule;
-	binFormat.setBackground(QColor(color_background));
-	binFormat.setForeground(QColor(color_bin));
-	rule.pattern = QRegExp(QString("\\W\\%[0-1_]+\\b"));
-	rule.format = binFormat;
-	highlightingRules.append(rule);
-    }
-
-    // Highlight hexadecimal constan
-    if (m_options.testFlag(PropEdit::PROPED_USE_HEX)) {
-	HighlightingRule rule;
-	hexFormat.setBackground(QColor(color_background));
-	hexFormat.setForeground(QColor(color_hex));
-	rule.pattern = QRegExp(QString("\\W\\$[0-9A-Fa-f_]+"));
-	rule.format = hexFormat;
-	highlightingRules.append(rule);
-    }
-
-    // Highlight float constant
-    if (m_options.testFlag(PropEdit::PROPED_USE_FLOAT)) {
-	HighlightingRule rule;
-	fltFormat.setBackground(QColor(color_background));
-	fltFormat.setForeground(QColor(color_flt));
-	rule.pattern = QRegExp(QString("\\W[0-9]+\\.[0-9]*"));
-	rule.format = fltFormat;
-	highlightingRules.append(rule);
-    }
-
-    // Highlight keywords (reserved names) ?
-    // i.e. BYTE, WORD, LONG, ORG, ORG, ORGF, RES, FIT, ...
-    if (m_options.testFlag(PropEdit::PROPED_USE_KEYWORDS)) {
-	HighlightingRule rule;
-	QStringList keywords = g_tokens.list_esc(g_keywords);
-	keywordFormat.setFontWeight(QFont::ExtraBold);
-	keywordFormat.setBackground(QColor(color_background));
-	keywordFormat.setForeground(QColor(color_keyword));
-	rule.pattern = QRegExp(QString("\\b(%1)\\b")
-			       .arg(keywords.join(QChar('|'))),
-			       Qt::CaseInsensitive);
-	rule.format = keywordFormat;
-	highlightingRules.append(rule);
-    }
-
-    // Highlight conditionals ?
-    // i.e. IF_NZ, IF_C, ...
-    if (m_options.testFlag(PropEdit::PROPED_USE_CONDITIONALS)) {
-	HighlightingRule rule;
-	QStringList keywords = g_tokens.list_esc(g_conditionals);
-	conditionalFormat.setBackground(QColor(color_background));
-	conditionalFormat.setForeground(QColor(color_conditional));
-	rule.pattern = QRegExp(QString("\\b(%1)\\b")
-			       .arg(keywords.join(QChar('|'))),
-			       Qt::CaseInsensitive);
-	rule.format = conditionalFormat;
-	highlightingRules.append(rule);
-    }
-
-    // Highlight preprocessor statements
-    // i.e. #define, #undef, #if, #ifdef, #else, ...
-    if (m_options.testFlag(PropEdit::PROPED_USE_PREPROC)) {
-	HighlightingRule rule;
-	QStringList keywords = g_tokens.list_esc(g_preproc);
-	preprocFormat.setBackground(QColor(color_background));
-	preprocFormat.setForeground(QColor(color_preproc));
-	rule.pattern = QRegExp(QString("(^|\\b)(%1)\\b")
-			       .arg(keywords.join(QChar('|'))));
-	rule.format = preprocFormat;
-	highlightingRules.append(rule);
-    }
-
     // Enable Multi-Line Comments ?
     // Starting with "{" or multiple "{{", ending with "}" or multiple "}}"
     if (options.testFlag(PropEdit::PROPED_USE_MULTI_LINE_COMMENTS)) {
@@ -500,13 +386,132 @@ PropHighlighter::PropHighlighter(QTextDocument *doc, PropEdit::Options options)
 	highlightingRules.append(rule);
     }
 
-    // Enable Single-Line Comments ? (starting with "'" until end-of-line...)
+    // Enable until-end-of-line Comments ? (starting with ')
     if (m_options.testFlag(PropEdit::PROPED_USE_SINGLE_LINE_COMMENTS)) {
 	HighlightingRule rule;
 	singleLineCommentFormat.setBackground(QColor(color_background));
 	singleLineCommentFormat.setForeground(QColor(color_comment));
 	rule.pattern = QRegExp("'[^\n]*");
 	rule.format = singleLineCommentFormat;
+	highlightingRules.append(rule);
+    }
+
+    // Highlight section names ?
+    if (m_options.testFlag(PropEdit::PROPED_USE_SECTIONS)) {
+	HighlightingRule rule;
+	QStringList sections = g_tokens.list(g_sections);
+	sectionsFormat.setFontUnderline(true);
+	sectionsFormat.setBackground(QColor(color_background));
+	sectionsFormat.setForeground(QColor(color_section));
+	rule.pattern = QRegExp(QString("^(%1)")
+			       .arg(sections.join(QChar('|'))));
+	rule.format = sectionsFormat;
+	highlightingRules.append(rule);
+    }
+
+    // Highlight operators?
+    if (m_options.testFlag(PropEdit::PROPED_USE_OPERATORS)) {
+	HighlightingRule rule;
+	operatorFormat.setBackground(QColor(color_background));
+	operatorFormat.setForeground(QColor(color_operator));
+	operatorFormat.setFontWeight(QFont::Bold);
+	QStringList patterns = g_tokens.list_esc(g_operator);
+	rule.pattern = QRegExp(QString("(%1)")
+			       .arg(patterns.join(QChar('|'))),
+			       Qt::CaseInsensitive);
+	rule.format = operatorFormat;
+	highlightingRules.append(rule);
+    }
+
+    // Highlight decimal constants?
+    if (m_options.testFlag(PropEdit::PROPED_USE_DEC)) {
+	HighlightingRule rule;
+	decFormat.setBackground(QColor(color_background));
+	decFormat.setForeground(QColor(color_dec));
+	rule.pattern = QRegExp(QString("\\W[0-9_]+\\b"));
+	rule.format = decFormat;
+	highlightingRules.append(rule);
+    }
+
+    // Highlight binary constants?
+    if (m_options.testFlag(PropEdit::PROPED_USE_BIN)) {
+	HighlightingRule rule;
+	binFormat.setBackground(QColor(color_background));
+	binFormat.setForeground(QColor(color_bin));
+	rule.pattern = QRegExp(QString("\\W\\%[0-1_]+\\b"));
+	rule.format = binFormat;
+	highlightingRules.append(rule);
+    }
+
+    // Highlight hexadecimal constants?
+    if (m_options.testFlag(PropEdit::PROPED_USE_HEX)) {
+	HighlightingRule rule;
+	hexFormat.setBackground(QColor(color_background));
+	hexFormat.setForeground(QColor(color_hex));
+	rule.pattern = QRegExp(QString("\\W\\$[0-9A-Fa-f_]+"));
+	rule.format = hexFormat;
+	highlightingRules.append(rule);
+    }
+
+    // Highlight float constants?
+    if (m_options.testFlag(PropEdit::PROPED_USE_FLOAT)) {
+	HighlightingRule rule;
+	fltFormat.setBackground(QColor(color_background));
+	fltFormat.setForeground(QColor(color_flt));
+	rule.pattern = QRegExp(QString("\\W[0-9]+\\.[0-9]*"));
+	rule.format = fltFormat;
+	highlightingRules.append(rule);
+    }
+
+    // Highlight string constants in double quotes?
+    if (m_options.testFlag(PropEdit::PROPED_USE_STRING)) {
+	HighlightingRule rule;
+	strFormat.setBackground(QColor(color_background));
+	strFormat.setForeground(QColor(color_str));
+	rule.pattern = QRegExp(QLatin1String("\"([^\\\"]|\\\\.)*\""));
+	rule.format = strFormat;
+	highlightingRules.append(rule);
+    }
+
+    // Highlight keywords (reserved names)?
+    // i.e. BYTE, WORD, LONG, ORG, ORG, ORGF, RES, FIT, ...
+    if (m_options.testFlag(PropEdit::PROPED_USE_KEYWORDS)) {
+	HighlightingRule rule;
+	keywordFormat.setFontWeight(QFont::ExtraBold);
+	keywordFormat.setBackground(QColor(color_background));
+	keywordFormat.setForeground(QColor(color_keyword));
+	QStringList patterns = g_tokens.list_esc(g_keywords);
+	rule.pattern = QRegExp(QString("\\b(%1)\\b")
+			       .arg(patterns.join(QChar('|'))),
+			       Qt::CaseInsensitive);
+	rule.format = keywordFormat;
+	highlightingRules.append(rule);
+    }
+
+    // Highlight conditionals ?
+    // i.e. IF_NZ, IF_C, ...
+    if (m_options.testFlag(PropEdit::PROPED_USE_CONDITIONALS)) {
+	HighlightingRule rule;
+	conditionalFormat.setBackground(QColor(color_background));
+	conditionalFormat.setForeground(QColor(color_conditional));
+	QStringList patterns = g_tokens.list_esc(g_conditionals);
+	rule.pattern = QRegExp(QString("\\b(%1)\\b")
+			       .arg(patterns.join(QChar('|'))),
+			       Qt::CaseInsensitive);
+	rule.format = conditionalFormat;
+	highlightingRules.append(rule);
+    }
+
+    // Highlight preprocessor statements
+    // i.e. #define, #undef, #if, #ifdef, #else, ...
+    if (m_options.testFlag(PropEdit::PROPED_USE_PREPROC)) {
+	HighlightingRule rule;
+	preprocFormat.setBackground(QColor(color_background));
+	preprocFormat.setForeground(QColor(color_preproc));
+	QStringList patterns = g_tokens.list_esc(g_preproc);
+	rule.pattern = QRegExp(QString("(^|\\b)(%1)\\b")
+			       .arg(patterns.join(QChar('|'))));
+	rule.format = preprocFormat;
 	highlightingRules.append(rule);
     }
 }

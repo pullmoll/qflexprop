@@ -40,7 +40,7 @@ public:
 private slots:
     void setup_dialog();
     void le_hubaddress_changed(const QString& address);
-    void le_flexspin_changed(const QString& binary);
+    void le_flexspin_changed(const QString& executable);
 
 private:
     Ui::FlexspinDlg *ui;

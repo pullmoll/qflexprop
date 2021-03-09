@@ -6,15 +6,74 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>315</width>
-    <height>379</height>
+    <width>349</width>
+    <height>338</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Application settings</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
-   <item row="0" column="1">
+   <item row="0" column="0">
+    <widget class="QLabel" name="lbl_font">
+     <property name="text">
+      <string>Fixed font</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="1">
+    <widget class="QComboBox" name="cb_size"/>
+   </item>
+   <item row="7" column="0" colspan="3">
+    <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="standardButtons">
+      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="0">
+    <widget class="QLabel" name="label_2">
+     <property name="text">
+      <string>Example</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="2">
+    <widget class="QComboBox" name="cb_weight"/>
+   </item>
+   <item row="1" column="0">
+    <widget class="QLabel" name="lbl_size">
+     <property name="text">
+      <string>Size and weight</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="0">
+    <widget class="QLabel" name="label">
+     <property name="text">
+      <string>Enabled statusbar elements</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+     </property>
+     <property name="wordWrap">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="1" colspan="2">
     <widget class="QFontComboBox" name="fontComboBox">
      <property name="currentText">
       <string>DejaVu Sans Mono</string>
@@ -29,7 +88,10 @@
      </property>
     </widget>
    </item>
-   <item row="4" column="1">
+   <item row="2" column="1" colspan="2">
+    <widget class="QTextEdit" name="te_example"/>
+   </item>
+   <item row="3" column="1" colspan="2">
     <widget class="QGroupBox" name="groupBox">
      <property name="title">
       <string/>
@@ -143,84 +205,11 @@
      </layout>
     </widget>
    </item>
-   <item row="0" column="0">
-    <widget class="QLabel" name="lbl_font">
-     <property name="text">
-      <string>Fixed font</string>
-     </property>
-     <property name="alignment">
-      <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
-     </property>
-    </widget>
-   </item>
-   <item row="8" column="0" colspan="3">
-    <widget class="QDialogButtonBox" name="buttonBox">
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
-     </property>
-     <property name="standardButtons">
-      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
-     </property>
-    </widget>
-   </item>
-   <item row="1" column="0">
-    <widget class="QLabel" name="lbl_size">
-     <property name="text">
-      <string>Point size</string>
-     </property>
-     <property name="alignment">
-      <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
-     </property>
-    </widget>
-   </item>
-   <item row="2" column="0">
-    <widget class="QLabel" name="lbl_weight">
-     <property name="text">
-      <string>Weight</string>
-     </property>
-     <property name="alignment">
-      <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
-     </property>
-    </widget>
-   </item>
-   <item row="1" column="1">
-    <widget class="QComboBox" name="cb_size"/>
-   </item>
-   <item row="2" column="1">
-    <widget class="QComboBox" name="cb_weight"/>
-   </item>
-   <item row="3" column="1">
-    <widget class="QTextEdit" name="te_example"/>
-   </item>
-   <item row="4" column="0">
-    <widget class="QLabel" name="label">
-     <property name="text">
-      <string>Enabled statusbar elements</string>
-     </property>
-     <property name="alignment">
-      <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
-     </property>
-     <property name="wordWrap">
-      <bool>true</bool>
-     </property>
-    </widget>
-   </item>
-   <item row="3" column="0">
-    <widget class="QLabel" name="label_2">
-     <property name="text">
-      <string>Example</string>
-     </property>
-     <property name="alignment">
-      <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
-     </property>
-    </widget>
-   </item>
   </layout>
  </widget>
  <tabstops>
   <tabstop>fontComboBox</tabstop>
   <tabstop>cb_size</tabstop>
-  <tabstop>cb_weight</tabstop>
   <tabstop>te_example</tabstop>
   <tabstop>cb_00</tabstop>
   <tabstop>cb_02</tabstop>

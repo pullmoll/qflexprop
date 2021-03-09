@@ -104,12 +104,12 @@
     <property name="title">
      <string>&amp;Compile</string>
     </property>
-    <addaction name="action_Verbose_upload"/>
-    <addaction name="action_Switch_to_term"/>
-    <addaction name="separator"/>
     <addaction name="action_Build"/>
     <addaction name="action_Upload"/>
     <addaction name="action_Run"/>
+    <addaction name="separator"/>
+    <addaction name="action_Verbose_upload"/>
+    <addaction name="action_Switch_to_term"/>
    </widget>
    <widget class="QMenu" name="menu_Help">
     <property name="title">

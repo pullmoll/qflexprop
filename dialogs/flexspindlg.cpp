@@ -39,6 +39,10 @@ FlexspinDlg::~FlexspinDlg()
     delete ui;
 }
 
+/**
+ * @brief Return the settings from the dialog
+ * @return FlexspinDlg::Settings structure
+ */
 FlexspinDlg::Settings FlexspinDlg::settings() const
 {
     Settings s;
@@ -63,6 +67,10 @@ FlexspinDlg::Settings FlexspinDlg::settings() const
     return s;
 }
 
+/**
+ * @brief Set the settings for the dialog
+ * @param s const reference to a FlexspinDlg::Settings structure
+ */
 void FlexspinDlg::set_settings(const FlexspinDlg::Settings& s)
 {
     ui->le_flexspin->setText(s.executable);
@@ -80,9 +88,13 @@ void FlexspinDlg::set_settings(const FlexspinDlg::Settings& s)
     setup_dialog();
 }
 
-void FlexspinDlg::le_flexspin_changed(const QString& binary)
+/**
+ * @brief Slot called when the text in the flexspin line editor changed
+ * @param executable path and name of the executable
+ */
+void FlexspinDlg::le_flexspin_changed(const QString& executable)
 {
-    QFileInfo info(binary);
+    QFileInfo info(executable);
     if (info.isExecutable()) {
 	ui->le_flexspin->setStyleSheet(QString());
 	setup_dialog();
@@ -93,6 +105,10 @@ void FlexspinDlg::le_flexspin_changed(const QString& binary)
     }
 }
 
+/**
+ * @brief Slot called when the text in the hub address line editor changed
+ * @param address const reference to a QString with the new hub address
+ */
 void FlexspinDlg::le_hubaddress_changed(const QString& address)
 {
     bool ok;
@@ -108,7 +124,9 @@ void FlexspinDlg::le_hubaddress_changed(const QString& address)
     ui->cb_skip_coginit->setEnabled(addr > 0);
 }
 
-
+/**
+ * @brief Connect Ui elements to private slots
+ */
 void FlexspinDlg::setup_connections()
 {
     connect(ui->le_flexspin, SIGNAL(textChanged(QString)),
@@ -118,13 +136,14 @@ void FlexspinDlg::setup_connections()
 }
 
 /**
- * @brief Setup the dialog.
+ * @brief Setup the dialog
  * If the binary is defined and executable,
- * return its version information.
+ * set its version information in the version info line editor.
  */
 void FlexspinDlg::setup_dialog()
 {
     static const QStringList args = {{"--version"}};
+    ui->le_version_info->setToolTip(QString());
     QString flexspin = ui->le_flexspin->text();
     QFileInfo info(flexspin);
     if (info.isExecutable()) {
@@ -138,17 +157,17 @@ void FlexspinDlg::setup_dialog()
 		while (!process.atEnd()) {
 		    lines += process.readLine().trimmed();
 		}
-		ui->le_version_info->setToolTip(lines.join(QChar::LineFeed));
+		if (lines.isEmpty())
+		    return;
 		ui->le_version_info->setText(lines.last());
-	    } else {
-		ui->le_version_info->setText(tr("Executable '%1' did not finish").arg(flexspin));
-		ui->le_version_info->setToolTip(QString());
+		ui->le_version_info->setToolTip(lines.join(QChar::LineFeed));
+		return;
 	    }
-	} else {
-	    ui->le_version_info->setText(tr("Executable '%1' was not started").arg(flexspin));
+	    ui->le_version_info->setText(tr("Executable '%1' did not finish").arg(flexspin));
+	    return;
 	}
-    } else {
-	ui->le_version_info->setText(tr("Executable '%1' not found").arg(flexspin));
-	ui->le_version_info->setToolTip(QString());
+	ui->le_version_info->setText(tr("Executable '%1' was not started").arg(flexspin));
+	return;
     }
+    ui->le_version_info->setText(tr("Executable '%1' not found").arg(flexspin));
 }

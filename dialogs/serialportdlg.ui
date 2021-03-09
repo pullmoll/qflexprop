@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>450</width>
-    <height>335</height>
+    <width>416</width>
+    <height>298</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -33,6 +33,93 @@
    <property name="spacing">
     <number>4</number>
    </property>
+   <item row="0" column="1">
+    <widget class="QGroupBox" name="parametersBox">
+     <property name="title">
+      <string>Select Parameters</string>
+     </property>
+     <layout class="QGridLayout" name="gridLayout_2" columnstretch="0,1">
+      <property name="leftMargin">
+       <number>5</number>
+      </property>
+      <property name="topMargin">
+       <number>5</number>
+      </property>
+      <property name="rightMargin">
+       <number>5</number>
+      </property>
+      <property name="bottomMargin">
+       <number>5</number>
+      </property>
+      <property name="spacing">
+       <number>4</number>
+      </property>
+      <item row="3" column="0">
+       <widget class="QLabel" name="lbl_stop_bots">
+        <property name="text">
+         <string>Stop bits:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="1">
+       <widget class="QComboBox" name="cb_stop_bits"/>
+      </item>
+      <item row="2" column="0">
+       <widget class="QLabel" name="lbl_parity">
+        <property name="text">
+         <string>Parity:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QComboBox" name="cb_baud_rate"/>
+      </item>
+      <item row="2" column="1">
+       <widget class="QComboBox" name="cb_parity"/>
+      </item>
+      <item row="4" column="1">
+       <widget class="QComboBox" name="cb_flow_control"/>
+      </item>
+      <item row="0" column="0">
+       <widget class="QLabel" name="lbl_baud_rate">
+        <property name="text">
+         <string>BaudRate:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QComboBox" name="cb_data_bits"/>
+      </item>
+      <item row="4" column="0">
+       <widget class="QLabel" name="lbl_flow_control">
+        <property name="text">
+         <string>Flow control:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="lbl_data_bits">
+        <property name="text">
+         <string>Data bits:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="5" column="0">
+       <spacer name="verticalSpacer_2">
+        <property name="orientation">
+         <enum>Qt::Vertical</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>20</width>
+          <height>40</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+     </layout>
+    </widget>
+   </item>
    <item row="1" column="0" colspan="2">
     <widget class="QGroupBox" name="additionalOptionsGroupBox">
      <property name="enabled">
@@ -60,85 +147,18 @@
       <item>
        <widget class="QCheckBox" name="cb_local_echo">
         <property name="text">
-         <string>Local echo</string>
+         <string>Enable local echo</string>
         </property>
        </widget>
       </item>
      </layout>
     </widget>
    </item>
-   <item row="0" column="1">
-    <widget class="QGroupBox" name="parametersBox">
-     <property name="title">
-      <string>Select Parameters</string>
+   <item row="3" column="0" colspan="2">
+    <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="standardButtons">
+      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
      </property>
-     <layout class="QGridLayout" name="gridLayout_2" columnstretch="0,1">
-      <property name="leftMargin">
-       <number>5</number>
-      </property>
-      <property name="topMargin">
-       <number>5</number>
-      </property>
-      <property name="rightMargin">
-       <number>5</number>
-      </property>
-      <property name="bottomMargin">
-       <number>5</number>
-      </property>
-      <property name="spacing">
-       <number>4</number>
-      </property>
-      <item row="0" column="0">
-       <widget class="QLabel" name="lbl_baud_rate">
-        <property name="text">
-         <string>BaudRate:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="1">
-       <widget class="QComboBox" name="cb_baud_rate"/>
-      </item>
-      <item row="1" column="0">
-       <widget class="QLabel" name="lbl_data_bits">
-        <property name="text">
-         <string>Data bits:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="1">
-       <widget class="QComboBox" name="cb_data_bits"/>
-      </item>
-      <item row="2" column="0">
-       <widget class="QLabel" name="lbl_parity">
-        <property name="text">
-         <string>Parity:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="1">
-       <widget class="QComboBox" name="cb_parity"/>
-      </item>
-      <item row="3" column="0">
-       <widget class="QLabel" name="lbl_stop_bots">
-        <property name="text">
-         <string>Stop bits:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="1">
-       <widget class="QComboBox" name="cb_stop_bits"/>
-      </item>
-      <item row="4" column="0">
-       <widget class="QLabel" name="lbl_flow_control">
-        <property name="text">
-         <string>Flow control:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="4" column="1">
-       <widget class="QComboBox" name="cb_flow_control"/>
-      </item>
-     </layout>
     </widget>
    </item>
    <item row="0" column="0">
@@ -348,12 +368,18 @@
      </layout>
     </widget>
    </item>
-   <item row="2" column="0" colspan="2">
-    <widget class="QDialogButtonBox" name="buttonBox">
-     <property name="standardButtons">
-      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+   <item row="2" column="0">
+    <spacer name="verticalSpacer">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
      </property>
-    </widget>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>40</height>
+      </size>
+     </property>
+    </spacer>
    </item>
   </layout>
  </widget>

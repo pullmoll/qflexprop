@@ -9,7 +9,7 @@
  *****************************************************************************/
 #include "util.h"
 
-static const QMultiMap<FileType,QString> m_filetype_suffix = {
+static const QMultiMap<FileType,QString> g_filetype_to_suffix = {
     {FT_UNKNOWN, QLatin1String("*")},
     {FT_BASIC, QLatin1String("BAS")},
     {FT_BASIC, QLatin1String("BASIC")},
@@ -22,14 +22,14 @@ static const QMultiMap<FileType,QString> m_filetype_suffix = {
     {FT_BINARY, QLatin1String("BIN")},
 };
 
-static QMultiMap<QString,FileType> m_suffix_filetype;
+static QMultiMap<QString,FileType> g_suffix_to_filetype;
 
 Util::Util()
 {
-    foreach(const QString& suffix, m_filetype_suffix.values()) {
-	const int idx = m_filetype_suffix.values().indexOf(suffix);
-	FileType filetype = m_filetype_suffix.keys().at(idx);
-	m_suffix_filetype.insert(suffix, filetype);
+    foreach(const QString& suffix, g_filetype_to_suffix.values()) {
+	const int idx = g_filetype_to_suffix.values().indexOf(suffix);
+	FileType filetype = g_filetype_to_suffix.keys().at(idx);
+	g_suffix_to_filetype.insert(suffix, filetype);
     }
 }
 
@@ -97,8 +97,8 @@ FileType Util::filetype(const QString& filename) const
 	return FT_UNKNOWN;
 
     const QString& suffix = info.suffix().toUpper();
-    if (m_suffix_filetype.contains(suffix))
-	return m_suffix_filetype.value(suffix);
+    if (g_suffix_to_filetype.contains(suffix))
+	return g_suffix_to_filetype.value(suffix);
 
     return FT_UNKNOWN;
 }

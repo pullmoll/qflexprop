@@ -114,3 +114,7 @@ extern const char id_process_tb[];
 extern const char id_tab_lst[];
 extern const char id_tab_p2asm[];
 extern const char id_tab_binary[];
+
+extern const char prop_sha256[];
+extern const char prop_filename[];
+extern const char prop_filetype[];

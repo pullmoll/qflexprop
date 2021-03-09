@@ -51,6 +51,7 @@ public:
 	PROPED_USE_DEC			= (1 << 8),
 	PROPED_USE_HEX			= (1 << 9),
 	PROPED_USE_FLOAT		= (1 <<10),
+	PROPED_USE_STRING		= (1 <<11),
 	PROPED_USE_IN_LINE_COMMENTS	= (1 <<13),
 	PROPED_USE_SINGLE_LINE_COMMENTS = (1 <<14),
 	PROPED_USE_MULTI_LINE_COMMENTS  = (1 <<15),
@@ -67,6 +68,7 @@ public:
 	    | PROPED_USE_DEC
 	    | PROPED_USE_HEX
 	    | PROPED_USE_FLOAT
+	    | PROPED_USE_STRING
 	    | PROPED_USE_IN_LINE_COMMENTS
 	    | PROPED_USE_SINGLE_LINE_COMMENTS
 	    | PROPED_USE_MULTI_LINE_COMMENTS
@@ -135,17 +137,18 @@ protected:
     void highlightBlock(const QString &text) Q_DECL_OVERRIDE;
 
 private:
-    static constexpr QRgb color_background = qRgb(0xfc,0xfc,0xf4);
-    static constexpr QRgb color_preproc = qRgb(0x20, 0x20, 0xdf);
-    static constexpr QRgb color_keyword = qRgb(0x00,0x9f,0x9f);
-    static constexpr QRgb color_conditional = qRgb(0x9f,0x00,0x9f);
-    static constexpr QRgb color_section = qRgb(0x00,0x5f,0x5f);
-    static constexpr QRgb color_operator = qRgb(0x20, 0x40, 0x80);
-    static constexpr QRgb color_comment = qRgb(0x30, 0x80, 0x30);
-    static constexpr QRgb color_bin = qRgb(0x80, 0x20, 0xc0);
-    static constexpr QRgb color_dec = qRgb(0x80, 0x20, 0x20);
-    static constexpr QRgb color_hex = qRgb(0xa0, 0x60, 0x20);
-    static constexpr QRgb color_flt = qRgb(0x60, 0xa0, 0x20);
+    static constexpr QRgb color_background  = qRgb(0xf8, 0xfc, 0xf8);
+    static constexpr QRgb color_preproc	    = qRgb(0x20, 0x20, 0x7f);
+    static constexpr QRgb color_keyword	    = qRgb(0x00, 0x9f, 0x9f);
+    static constexpr QRgb color_conditional = qRgb(0x9f, 0x00, 0x9f);
+    static constexpr QRgb color_section	    = qRgb(0x00, 0x5f, 0x5f);
+    static constexpr QRgb color_operator    = qRgb(0x60, 0x40, 0x60);
+    static constexpr QRgb color_comment	    = qRgb(0x30, 0xc0, 0x30);
+    static constexpr QRgb color_bin	    = qRgb(0x80, 0x20, 0x60);
+    static constexpr QRgb color_dec	    = qRgb(0x80, 0x20, 0x20);
+    static constexpr QRgb color_hex	    = qRgb(0xa0, 0x60, 0x20);
+    static constexpr QRgb color_flt	    = qRgb(0xa0, 0x20, 0x60);
+    static constexpr QRgb color_str	    = qRgb(0x30, 0x30, 0xff);
 
     PropEdit::Options m_options;
     QVector<HighlightingRule> highlightingRules;
@@ -165,6 +168,7 @@ private:
     QTextCharFormat decFormat;
     QTextCharFormat hexFormat;
     QTextCharFormat fltFormat;
+    QTextCharFormat strFormat;
 };
 
 class LineNumberArea : public QWidget

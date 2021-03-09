@@ -112,6 +112,9 @@ const char id_tab_lst[] = "lst";		//!< for property lst listing of tab widgets
 const char id_tab_p2asm[] = "p2asm";		//!< for property p2asm (intermediate) of tab widgets
 const char id_tab_binary[] = "binary";		//!< for property binary output of tab widgets
 
+const char prop_sha256[] = "sha256";
+const char prop_filename[] = "filename";
+const char prop_filetype[] = "filetype";
 
 const QMap<int,QString> direction_str {
     {QSerialPort::Direction(0), QStringLiteral("?")},

@@ -27,3 +27,4 @@ PUB hello
   ser.start(rx_pin, tx_pin, 0, baud)
   repeat 100
     ser.printf("Hello, world!\n")
+  ser.printf("That's all folks!")

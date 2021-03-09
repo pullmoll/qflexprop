@@ -574,10 +574,14 @@ void QFlexProp::tab_changed(int index)
     Q_UNUSED(index)
     const PropEdit* pe = current_propedit(index);
     const bool enable = pe != nullptr;
-    const bool has_listing = pe && !pe->property(id_tab_p2asm).isNull();
+    const bool has_listing = pe && !pe->property(id_tab_lst).isNull();
+    const bool has_intermediate = pe && !pe->property(id_tab_p2asm).isNull();
     const bool has_binary = pe && !pe->property(id_tab_binary).isNull();
+
     ui->action_Show_listing->setEnabled(enable && has_listing);
+    ui->action_Show_intermediate->setEnabled(enable && has_intermediate);
     ui->action_Show_binary->setEnabled(enable && has_binary);
+
     ui->action_Verbose_upload->setEnabled(enable);
     ui->action_Switch_to_term->setEnabled(enable);
     ui->action_Build->setEnabled(enable);
@@ -1660,6 +1664,7 @@ bool QFlexProp::flexspin(QByteArray* p_binary, QString* p_p2asm, QString* p_lst)
 	       .arg(args.join(QStringLiteral(" \\\n\t"))));
 
     QProcess process(this);
+    process.setProperty(id_process_tb, QVariant::fromValue(tb));
     process.setProgram(m_flexspin_executable);
 #if defined(Q_OS_WIN)
     // Windows really sucks: not even argument passing to a process works as elsewhere
@@ -1667,7 +1672,6 @@ bool QFlexProp::flexspin(QByteArray* p_binary, QString* p_p2asm, QString* p_lst)
 #else
     process.setArguments(args);
 #endif
-    process.setProperty(id_process_tb, QVariant::fromValue(tb));
     connect(&process, &QProcess::channelReadyRead,
 	    this, &QFlexProp::channelReadyRead);
 
@@ -1812,7 +1816,7 @@ void QFlexProp::on_action_Run_triggered()
 	    this, &QFlexProp::printMessage);
     connect(&propload, &PropLoad::Progress,
 	    this, &QFlexProp::showProgress);
-    bool ok = propload.load_file(binary);
+    bool ok = propload.load_data(binary);
 
     // re-connect to the readyRead() signal
     connect(m_dev, &QSerialPort::readyRead,
