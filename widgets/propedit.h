@@ -30,7 +30,8 @@ typedef struct {
 }   HighlightingRule;
 
 /**
- * @brief The propEdit class is derived from the QPlainTextEdit
+ * @brief PropEdit class
+ * The PropEdit class is derived from the QPlainTextEdit
  * and offers syntax highlighting and line number options.
  */
 class PropEdit : public QPlainTextEdit
@@ -39,39 +40,39 @@ class PropEdit : public QPlainTextEdit
     Q_FLAGS(Options)
 public:
     enum Option {
-	PROPED_NONE                     = 0,
-	PROPED_USE_LINENUMBERS          = (1 << 0),
-	PROPED_DO_HIGHLIGHT             = (1 << 1),
-	PROPED_USE_PREPROC              = (1 << 2),
-	PROPED_USE_KEYWORDS             = (1 << 3),
-	PROPED_USE_CONDITIONALS         = (1 << 4),
-	PROPED_USE_SECTIONS             = (1 << 5),
-	PROPED_USE_OPERATORS            = (1 << 6),
-	PROPED_USE_BIN			= (1 << 7),
-	PROPED_USE_DEC			= (1 << 8),
-	PROPED_USE_HEX			= (1 << 9),
-	PROPED_USE_FLOAT		= (1 <<10),
-	PROPED_USE_STRING		= (1 <<11),
-	PROPED_USE_IN_LINE_COMMENTS	= (1 <<13),
-	PROPED_USE_SINGLE_LINE_COMMENTS = (1 <<14),
-	PROPED_USE_MULTI_LINE_COMMENTS  = (1 <<15),
+	PE_NONE                     = 0,
+	PE_USE_LINENUMBERS          = (1 << 0),
+	PE_DO_HIGHLIGHT             = (1 << 1),
+	PE_USE_PREPROC              = (1 << 2),
+	PE_USE_KEYWORDS             = (1 << 3),
+	PE_USE_CONDITIONALS         = (1 << 4),
+	PE_USE_SECTIONS             = (1 << 5),
+	PE_USE_OPERATORS            = (1 << 6),
+	PE_USE_BIN		    = (1 << 7),
+	PE_USE_DEC		    = (1 << 8),
+	PE_USE_HEX		    = (1 << 9),
+	PE_USE_FLOAT		    = (1 <<10),
+	PE_USE_STRING		    = (1 <<11),
+	PE_USE_IN_LINE_COMMENTS	    = (1 <<13),
+	PE_USE_SINGLE_LINE_COMMENTS = (1 <<14),
+	PE_USE_MULTI_LINE_COMMENTS  = (1 <<15),
 
-	PROPED_DEFAULT = PROPED_NONE
-	    | PROPED_USE_LINENUMBERS
-	    | PROPED_DO_HIGHLIGHT
-	    | PROPED_USE_PREPROC
-	    | PROPED_USE_KEYWORDS
-	    | PROPED_USE_CONDITIONALS
-	    | PROPED_USE_SECTIONS
-	    | PROPED_USE_OPERATORS
-	    | PROPED_USE_BIN
-	    | PROPED_USE_DEC
-	    | PROPED_USE_HEX
-	    | PROPED_USE_FLOAT
-	    | PROPED_USE_STRING
-	    | PROPED_USE_IN_LINE_COMMENTS
-	    | PROPED_USE_SINGLE_LINE_COMMENTS
-	    | PROPED_USE_MULTI_LINE_COMMENTS
+	PE_DEFAULT = PE_NONE
+	    | PE_USE_LINENUMBERS
+	    | PE_DO_HIGHLIGHT
+	    | PE_USE_PREPROC
+	    | PE_USE_KEYWORDS
+	    | PE_USE_CONDITIONALS
+	    | PE_USE_SECTIONS
+	    | PE_USE_OPERATORS
+	    | PE_USE_BIN
+	    | PE_USE_DEC
+	    | PE_USE_HEX
+	    | PE_USE_FLOAT
+	    | PE_USE_STRING
+	    | PE_USE_IN_LINE_COMMENTS
+	    | PE_USE_SINGLE_LINE_COMMENTS
+	    | PE_USE_MULTI_LINE_COMMENTS
     };
 
     Q_DECLARE_FLAGS(Options, Option)
@@ -79,7 +80,7 @@ public:
     PropEdit(QWidget *parent = nullptr,
 	     const int tabsize = 8,
 	     const QString& css_linearea = QString(),
-	     Options options = PROPED_DEFAULT);
+	     Options options = PE_DEFAULT);
 
     void line_number_area_paint_event(QPaintEvent *event);
     int  line_number_area_width();
@@ -103,8 +104,11 @@ public slots:
 
 protected:
     void resizeEvent(QResizeEvent *event);
+    void keyPressEvent(QKeyEvent* event) override;
 
 private slots:
+    void zoom_in();
+    void zoom_out();
     void update_line_number_area_width(int newBlockCount);
     void highlight_current_line();
     void update_line_number_area(const QRect& rect, int dy);
@@ -127,7 +131,7 @@ class PropHighlighter : public QSyntaxHighlighter
 {
     Q_OBJECT
 public:
-    PropHighlighter(QTextDocument *doc = nullptr, PropEdit::Options options = PropEdit::PROPED_DEFAULT);
+    PropHighlighter(QTextDocument *doc = nullptr, PropEdit::Options options = PropEdit::PE_DEFAULT);
 
     QBrush background();
     void appendRule(HighlightingRule rule);
@@ -143,7 +147,7 @@ private:
     static constexpr QRgb color_conditional = qRgb(0x9f, 0x00, 0x9f);
     static constexpr QRgb color_section	    = qRgb(0x00, 0x5f, 0x5f);
     static constexpr QRgb color_operator    = qRgb(0x60, 0x40, 0x60);
-    static constexpr QRgb color_comment	    = qRgb(0x30, 0xc0, 0x30);
+    static constexpr QRgb color_comment	    = qRgb(0x30, 0x80, 0x30);
     static constexpr QRgb color_bin	    = qRgb(0x80, 0x20, 0x60);
     static constexpr QRgb color_dec	    = qRgb(0x80, 0x20, 0x20);
     static constexpr QRgb color_hex	    = qRgb(0xa0, 0x60, 0x20);

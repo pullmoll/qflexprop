@@ -1634,6 +1634,9 @@ bool QFlexProp::flexspin(QByteArray* p_binary, QString* p_p2asm, QString* p_lst)
 	args += QString("-I %1").arg(quoted(include_path));
     }
 
+    // define the current terminal baud rate
+    args += QString("-D _BAUD=%1").arg(m_baud_rate);
+
     // generate a listing if enabled
     if (m_flexspin_listing)
 	args += QStringLiteral("-l");

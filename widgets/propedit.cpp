@@ -28,7 +28,7 @@ PropEdit::PropEdit(QWidget *parent,
     , m_error_lines()
 {
     setWordWrapMode(QTextOption::NoWrap);
-    if (m_options.testFlag(PropEdit::PROPED_USE_LINENUMBERS)) {
+    if (m_options.testFlag(PropEdit::PE_USE_LINENUMBERS)) {
 	m_lineno_area = new LineNumberArea(this, css_linearea);
 
 	connect(this, &PropEdit::blockCountChanged,
@@ -41,7 +41,7 @@ PropEdit::PropEdit(QWidget *parent,
 	update_line_number_area_width(0);
     }
 
-    if (m_options.testFlag(PROPED_DO_HIGHLIGHT)) {
+    if (m_options.testFlag(PE_DO_HIGHLIGHT)) {
 	m_highlighter = new PropHighlighter(document(), m_options);
 	highlight_current_line();
     }
@@ -80,6 +80,10 @@ void PropEdit::set_error_line_list(const QList<int>& list)
     update();
 }
 
+/**
+ * @brief Check if the QPlainTextEditor's text was modified
+ * @param true if text was changed
+ */
 bool PropEdit::changed() const
 {
     QString text = QPlainTextEdit::toPlainText();
@@ -90,16 +94,28 @@ bool PropEdit::changed() const
     return old_hash != new_hash;
 }
 
+/**
+ * @brief Return the plain text
+ * @return QString with text
+ */
 QString PropEdit::text() const
 {
     return QPlainTextEdit::toPlainText();
 }
 
+/**
+ * @brief Return the filename associated with this editor
+ * @return QString with filename
+ */
 QString PropEdit::filename() const
 {
     return property(prop_filename).toString();
 }
 
+/**
+ * @brief Return the file type detected for this editor's filename
+ * @return One of FileType enumeration values
+ */
 FileType PropEdit::filetype() const
 {
     return static_cast<FileType>(property(prop_filetype).toInt());
@@ -107,26 +123,7 @@ FileType PropEdit::filetype() const
 
 QString PropEdit::filetype_name() const
 {
-    switch (filetype()) {
-    case FT_BASIC:
-	return QLatin1String("Basic");
-    case FT_C:
-	return QLatin1String("C");
-    case FT_SPIN:
-	return QLatin1String("Spin");
-    case FT_SPIN2:
-	return QLatin1String("Spin (P2)");
-    case FT_PASM:
-	return QLatin1String("PAsm (P1)");
-    case FT_P2ASM:
-	return QLatin1String("PAsm (P2)");
-    case FT_BINARY:
-	return QLatin1String("Binary");
-    case FT_UNKNOWN:
-    default:
-	return QLatin1String("???");
-    }
-    return QLatin1String("<Invalid>");
+    return util.filetype_name(filetype());
 }
 
 void PropEdit::setFont(const QFont& font)
@@ -147,7 +144,7 @@ void PropEdit::setText(const QString& text)
     delete m_highlighter;
     m_highlighter = nullptr;
     setPlainText(text);
-    if (m_options.testFlag(PROPED_DO_HIGHLIGHT)) {
+    if (m_options.testFlag(PE_DO_HIGHLIGHT)) {
 	m_highlighter = new PropHighlighter(document(), m_options);
 	highlight_current_line();
     }
@@ -167,6 +164,7 @@ void PropEdit::gotoLineNumber(int lnum)
     QTextCursor cursor(block);
     cursor.clearSelection();
     setTextCursor(cursor);
+    setFocus();
     highlight_current_line();
 }
 
@@ -181,7 +179,7 @@ bool PropEdit::load(const QString& filename)
 	QString text = str.readAll();
 	file.close();
 	setProperty(prop_filename, info.absoluteFilePath());
-	FileType filetype = util.filetype(info.fileName());
+	FileType filetype = util.filetype(filename);
 	setProperty(prop_filetype, filetype);
 	setText(text);
 	return true;
@@ -276,6 +274,49 @@ void PropEdit::resizeEvent(QResizeEvent *e)
     m_lineno_area->setGeometry(QRect(cr.left(), cr.top(), line_number_area_width(), cr.height()));
 }
 
+void PropEdit::keyPressEvent(QKeyEvent* event)
+{
+    Qt::KeyboardModifiers mod = event->modifiers();
+    const bool ctrl = mod.testFlag(Qt::ControlModifier);
+    switch (event->key()) {
+    case Qt::Key_Plus:
+	// Zoom in ?
+	if (ctrl) {
+	    zoom_in();
+	    event->accept();
+	    return;
+	}
+    case Qt::Key_Minus:
+	// Zoom in ?
+	if (ctrl) {
+	    zoom_out();
+	    event->accept();
+	    return;
+	}
+    }
+    QPlainTextEdit::keyPressEvent(event);
+}
+
+void PropEdit::zoom_in()
+{
+    int size = font().pointSize();
+    if (size < 48) {
+	QFont f(font());
+	f.setPointSize(size + 1);
+	setFont(f);
+    }
+}
+
+void PropEdit::zoom_out()
+{
+    int size = font().pointSize();
+    if (size > 6) {
+	QFont f(font());
+	f.setPointSize(size - 1);
+	setFont(f);
+    }
+}
+
 /**
  * @brief Highlight the current line in the line number area
  */
@@ -363,7 +404,7 @@ PropHighlighter::PropHighlighter(QTextDocument *doc, PropEdit::Options options)
 {
     // Enable Multi-Line Comments ?
     // Starting with "{" or multiple "{{", ending with "}" or multiple "}}"
-    if (options.testFlag(PropEdit::PROPED_USE_MULTI_LINE_COMMENTS)) {
+    if (options.testFlag(PropEdit::PE_USE_MULTI_LINE_COMMENTS)) {
 	HighlightingRule rule;
 	multiLineCommentFormat.setBackground(QColor(color_background));
 	multiLineCommentFormat.setForeground(QColor(color_comment));
@@ -375,7 +416,7 @@ PropHighlighter::PropHighlighter(QTextDocument *doc, PropEdit::Options options)
     }
 
     // Enable In-Line Comments ? enclosed in "{" and "}"
-    if (m_options.testFlag(PropEdit::PROPED_USE_IN_LINE_COMMENTS)) {
+    if (m_options.testFlag(PropEdit::PE_USE_IN_LINE_COMMENTS)) {
 	HighlightingRule rule;
 	inLineCommentFormat.setBackground(QColor(color_background));
 	inLineCommentFormat.setForeground(QColor(color_comment));
@@ -386,18 +427,8 @@ PropHighlighter::PropHighlighter(QTextDocument *doc, PropEdit::Options options)
 	highlightingRules.append(rule);
     }
 
-    // Enable until-end-of-line Comments ? (starting with ')
-    if (m_options.testFlag(PropEdit::PROPED_USE_SINGLE_LINE_COMMENTS)) {
-	HighlightingRule rule;
-	singleLineCommentFormat.setBackground(QColor(color_background));
-	singleLineCommentFormat.setForeground(QColor(color_comment));
-	rule.pattern = QRegExp("'[^\n]*");
-	rule.format = singleLineCommentFormat;
-	highlightingRules.append(rule);
-    }
-
     // Highlight section names ?
-    if (m_options.testFlag(PropEdit::PROPED_USE_SECTIONS)) {
+    if (m_options.testFlag(PropEdit::PE_USE_SECTIONS)) {
 	HighlightingRule rule;
 	QStringList sections = g_tokens.list(g_sections);
 	sectionsFormat.setFontUnderline(true);
@@ -410,7 +441,7 @@ PropHighlighter::PropHighlighter(QTextDocument *doc, PropEdit::Options options)
     }
 
     // Highlight operators?
-    if (m_options.testFlag(PropEdit::PROPED_USE_OPERATORS)) {
+    if (m_options.testFlag(PropEdit::PE_USE_OPERATORS)) {
 	HighlightingRule rule;
 	operatorFormat.setBackground(QColor(color_background));
 	operatorFormat.setForeground(QColor(color_operator));
@@ -424,7 +455,7 @@ PropHighlighter::PropHighlighter(QTextDocument *doc, PropEdit::Options options)
     }
 
     // Highlight decimal constants?
-    if (m_options.testFlag(PropEdit::PROPED_USE_DEC)) {
+    if (m_options.testFlag(PropEdit::PE_USE_DEC)) {
 	HighlightingRule rule;
 	decFormat.setBackground(QColor(color_background));
 	decFormat.setForeground(QColor(color_dec));
@@ -434,7 +465,7 @@ PropHighlighter::PropHighlighter(QTextDocument *doc, PropEdit::Options options)
     }
 
     // Highlight binary constants?
-    if (m_options.testFlag(PropEdit::PROPED_USE_BIN)) {
+    if (m_options.testFlag(PropEdit::PE_USE_BIN)) {
 	HighlightingRule rule;
 	binFormat.setBackground(QColor(color_background));
 	binFormat.setForeground(QColor(color_bin));
@@ -444,7 +475,7 @@ PropHighlighter::PropHighlighter(QTextDocument *doc, PropEdit::Options options)
     }
 
     // Highlight hexadecimal constants?
-    if (m_options.testFlag(PropEdit::PROPED_USE_HEX)) {
+    if (m_options.testFlag(PropEdit::PE_USE_HEX)) {
 	HighlightingRule rule;
 	hexFormat.setBackground(QColor(color_background));
 	hexFormat.setForeground(QColor(color_hex));
@@ -454,7 +485,7 @@ PropHighlighter::PropHighlighter(QTextDocument *doc, PropEdit::Options options)
     }
 
     // Highlight float constants?
-    if (m_options.testFlag(PropEdit::PROPED_USE_FLOAT)) {
+    if (m_options.testFlag(PropEdit::PE_USE_FLOAT)) {
 	HighlightingRule rule;
 	fltFormat.setBackground(QColor(color_background));
 	fltFormat.setForeground(QColor(color_flt));
@@ -464,7 +495,7 @@ PropHighlighter::PropHighlighter(QTextDocument *doc, PropEdit::Options options)
     }
 
     // Highlight string constants in double quotes?
-    if (m_options.testFlag(PropEdit::PROPED_USE_STRING)) {
+    if (m_options.testFlag(PropEdit::PE_USE_STRING)) {
 	HighlightingRule rule;
 	strFormat.setBackground(QColor(color_background));
 	strFormat.setForeground(QColor(color_str));
@@ -475,7 +506,7 @@ PropHighlighter::PropHighlighter(QTextDocument *doc, PropEdit::Options options)
 
     // Highlight keywords (reserved names)?
     // i.e. BYTE, WORD, LONG, ORG, ORG, ORGF, RES, FIT, ...
-    if (m_options.testFlag(PropEdit::PROPED_USE_KEYWORDS)) {
+    if (m_options.testFlag(PropEdit::PE_USE_KEYWORDS)) {
 	HighlightingRule rule;
 	keywordFormat.setFontWeight(QFont::ExtraBold);
 	keywordFormat.setBackground(QColor(color_background));
@@ -490,7 +521,7 @@ PropHighlighter::PropHighlighter(QTextDocument *doc, PropEdit::Options options)
 
     // Highlight conditionals ?
     // i.e. IF_NZ, IF_C, ...
-    if (m_options.testFlag(PropEdit::PROPED_USE_CONDITIONALS)) {
+    if (m_options.testFlag(PropEdit::PE_USE_CONDITIONALS)) {
 	HighlightingRule rule;
 	conditionalFormat.setBackground(QColor(color_background));
 	conditionalFormat.setForeground(QColor(color_conditional));
@@ -504,7 +535,7 @@ PropHighlighter::PropHighlighter(QTextDocument *doc, PropEdit::Options options)
 
     // Highlight preprocessor statements
     // i.e. #define, #undef, #if, #ifdef, #else, ...
-    if (m_options.testFlag(PropEdit::PROPED_USE_PREPROC)) {
+    if (m_options.testFlag(PropEdit::PE_USE_PREPROC)) {
 	HighlightingRule rule;
 	preprocFormat.setBackground(QColor(color_background));
 	preprocFormat.setForeground(QColor(color_preproc));
@@ -512,6 +543,16 @@ PropHighlighter::PropHighlighter(QTextDocument *doc, PropEdit::Options options)
 	rule.pattern = QRegExp(QString("(^|\\b)(%1)\\b")
 			       .arg(patterns.join(QChar('|'))));
 	rule.format = preprocFormat;
+	highlightingRules.append(rule);
+    }
+
+    // Enable until-end-of-line Comments ? (starting with ')
+    if (m_options.testFlag(PropEdit::PE_USE_SINGLE_LINE_COMMENTS)) {
+	HighlightingRule rule;
+	singleLineCommentFormat.setBackground(QColor(color_background));
+	singleLineCommentFormat.setForeground(QColor(color_comment));
+	rule.pattern = QRegExp("'[^\n]*");
+	rule.format = singleLineCommentFormat;
 	highlightingRules.append(rule);
     }
 }
@@ -546,7 +587,7 @@ void PropHighlighter::highlightBlock(const QString &text)
     setCurrentBlockState(0);
 
     // Multi-Line Comments supported ?
-    if (m_options.testFlag(PropEdit::PROPED_USE_MULTI_LINE_COMMENTS)) {
+    if (m_options.testFlag(PropEdit::PE_USE_MULTI_LINE_COMMENTS)) {
 
 	int startIndex = 0;
 	if (previousBlockState() != 1)

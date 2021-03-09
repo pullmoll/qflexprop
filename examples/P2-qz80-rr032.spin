@@ -67,10 +67,11 @@ CON
 
   _1us          = _clockfreq/1_000_000                          ' 1us
 '------------------------------------------------------------------------------------------------
-'  _baud         = 115_200
-'  _baud         = 230_400
-  _baud         = 921_600
-  _bitper       = (_clockfreq / _baud) << 16 + 7          ' 115200 baud, 8 bits
+#ifndef _BAUD
+#define _BAUD 230_400
+#endif
+  _baud         = _BAUD
+  _bitper       = (_CLOCKFREQ / _baud) << 16 + 7          ' 115200 baud, 8 bits
   _txmode       = %0000_0000_000_0000000000000_01_11110_0 'async tx mode, output enabled for smart output
   _rxmode       = %0000_0000_000_0000000000000_00_11111_0 'async rx mode, input  enabled for smart input
 '------------------------------------------------------------------------------------------------

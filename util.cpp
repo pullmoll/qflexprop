@@ -103,6 +103,30 @@ FileType Util::filetype(const QString& filename) const
     return FT_UNKNOWN;
 }
 
+QString Util::filetype_name(FileType type) const
+{
+    switch (type) {
+    case FT_BASIC:
+	return QLatin1String("Basic");
+    case FT_C:
+	return QLatin1String("C");
+    case FT_SPIN:
+	return QLatin1String("Spin");
+    case FT_SPIN2:
+	return QLatin1String("Spin (P2)");
+    case FT_PASM:
+	return QLatin1String("PAsm (P1)");
+    case FT_P2ASM:
+	return QLatin1String("PAsm (P2)");
+    case FT_BINARY:
+	return QLatin1String("Binary");
+    case FT_UNKNOWN:
+    default:
+	return QLatin1String("???");
+    }
+    return QLatin1String("<Invalid>");
+}
+
 /**
  * @brief Put a little endian 32 bit value in a @p data buffer starting at @p offs
  *

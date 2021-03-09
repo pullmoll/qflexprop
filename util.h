@@ -42,6 +42,7 @@ public:
     static const QByteArray fkey_str(const uchar ch1, const char* ch2 = nullptr, int kmod = 0);
 
     FileType filetype(const QString& filename) const;
+    QString filetype_name(FileType type) const;
 
     static void put_le32(QByteArray& data, int offs, quint32 value);
     static quint32 get_le32(const QByteArray& data, int offs);
