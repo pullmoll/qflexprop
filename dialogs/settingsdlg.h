@@ -1,5 +1,6 @@
 #pragma once
 #include <QDialog>
+#include <QCheckBox>
 
 namespace Ui {
 class SettingsDlg;
@@ -14,8 +15,11 @@ public:
     ~SettingsDlg();
 
     QFont font() const;
+    QHash<QString,bool> elements() const;
+
     void set_font(const QFont& font);
     void set_font(const QString& family, int size = 12, int weight = QFont::Normal);
+    void set_elements(QHash<QString,bool> elements);
 
 private slots:
     void setup_dialog();
@@ -26,4 +30,6 @@ private slots:
 private:
     Ui::SettingsDlg *ui;
     QFont m_font;
+    QHash<QString,bool> m_elements;
+    QHash<QString,QCheckBox*> m_checkboxes;
 };

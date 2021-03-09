@@ -30,6 +30,7 @@ extern const QLatin1String id_fixedfont_weight;
 extern const QLatin1String id_fixedfont_size;
 
 extern const QLatin1String id_grp_preferences;
+extern const QLatin1String id_grp_serialport;
 extern const QLatin1String id_default_com;
 extern const QLatin1String id_default;
 extern const QLatin1String id_name;
@@ -39,6 +40,7 @@ extern const QLatin1String id_parity;
 extern const QLatin1String id_stop_bits;
 extern const QLatin1String id_flow_control;
 extern const QLatin1String id_local_echo;
+extern const QLatin1String id_parity_data_stop;
 
 extern const QLatin1String id_port_name;
 extern const QLatin1String id_description;
@@ -48,8 +50,7 @@ extern const QLatin1String id_location;
 extern const QLatin1String id_product_id;
 extern const QLatin1String id_vendor_id;
 
-extern const QLatin1String id_grp_serialport;
-extern const QLatin1String id_parity_data_stop;
+extern const QLatin1String id_grp_enabled;
 extern const QLatin1String id_status;
 
 extern const QLatin1String id_terminal;

@@ -23,6 +23,18 @@ QFont SettingsDlg::font() const
     return m_font;
 }
 
+QHash<QString, bool> SettingsDlg::elements() const
+{
+    QHash<QString, bool> current_elements = m_elements;
+    foreach(const QString& id, m_elements.keys()) {
+	QCheckBox* cb = m_checkboxes.value(id, nullptr);
+	if (!cb)
+	    continue;
+	current_elements.insert(id, cb->isChecked());
+    }
+    return current_elements;
+}
+
 void SettingsDlg::set_font(const QFont& font)
 {
     if (m_font == font)
@@ -51,6 +63,30 @@ void SettingsDlg::set_font(const QFont& font)
 void SettingsDlg::set_font(const QString& family, int size, int weight)
 {
     set_font(QFont(family, size, weight));
+}
+
+void SettingsDlg::set_elements(QHash<QString, bool> elements)
+{
+    if (m_elements == elements)
+	return;
+
+    m_elements = elements;
+    foreach(const QString& id, m_elements.keys()) {
+	QCheckBox* cb = m_checkboxes.value(id, nullptr);
+	if (!cb)
+	    continue;
+	cb->setChecked(m_elements.value(id));
+	QString tooltip = pinout_leds.value(id);
+	if (tooltip.isEmpty())
+	    continue;
+	QString name = id;
+	name = name.remove(QLatin1String("id_")).toUpper();
+	QString desc = tooltip;
+	desc.remove(tr("Status of the "));
+	desc.remove(tr("line."));
+	cb->setText(QString("%1 (%2)").arg(name).arg(desc));
+	cb->setToolTip(tooltip);
+    }
 }
 
 void SettingsDlg::setup_dialog()
@@ -97,6 +133,22 @@ void SettingsDlg::setup_dialog()
     s.beginGroup(objectName());
     restoreGeometry(s.value(id_window_geometry).toByteArray());
     s.endGroup();
+
+    m_checkboxes.insert(id_baud_rate, ui->cb_00);
+    m_checkboxes.insert(id_parity_data_stop, ui->cb_01);
+    m_checkboxes.insert(id_flow_control, ui->cb_02);
+    m_checkboxes.insert(id_pwr, ui->cb_03);
+    m_checkboxes.insert(id_ri, ui->cb_04);
+    m_checkboxes.insert(id_dcd, ui->cb_05);
+    m_checkboxes.insert(id_dtr, ui->cb_06);
+    m_checkboxes.insert(id_dsr, ui->cb_07);
+    m_checkboxes.insert(id_rts, ui->cb_08);
+    m_checkboxes.insert(id_cts, ui->cb_09);
+    m_checkboxes.insert(id_txd, ui->cb_10);
+    m_checkboxes.insert(id_rxd, ui->cb_11);
+    m_checkboxes.insert(id_brk, ui->cb_12);
+    m_checkboxes.insert(id_fe, ui->cb_13);
+    m_checkboxes.insert(id_pe, ui->cb_14);
 }
 
 void SettingsDlg::font_index_changed(int index)

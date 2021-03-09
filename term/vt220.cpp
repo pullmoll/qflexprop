@@ -2115,16 +2115,60 @@ void vt220::term_set_columns(int width)
 {
     if (width <= 0)
 	width = m_deccolm;
-    term_set_size(width, m_height);
-    set_newx(m_cursor.newx);
+
+    for (int y = 0; y < m_height; y++) {
+	vtLine& line = m_screen[y];
+	line.resize(width);
+	if (width > m_width) {
+	    vtAttr space = line[0];
+	    space.set_code(32);
+	    space.set_mark(0);
+	    for (int x = m_width; x < width; x++) {
+		line[x] = space;
+	    }
+	}
+    }
+    for (int y = 0; y < m_backlog.count(); y++) {
+	vtLine& line = m_backlog[y];
+	line.resize(width);
+	if (width > m_width) {
+	    vtAttr space = line[0];
+	    space.set_code(32);
+	    space.set_mark(0);
+	    for (int x = m_width; x < width; x++) {
+		line[x] = space;
+	    }
+	}
+    }
+    m_deccolm = width;
+    m_width = width;
+    m_top = 0;
+    m_bottom = m_height;
+    resize(m_width * m_font_w, m_height * m_font_h);
+    emit UpdateSize();
 }
 
 void vt220::term_set_rows(int height)
 {
     if (height <= 0)
-	return;
-    term_set_size(m_width, height);
-    set_newx(m_cursor.newx);
+	height = m_height;
+
+    if (height < m_height) {
+	for (int y = 0; y < m_height - height; y++)
+	    add_backlog(m_screen.takeFirst());
+    }
+    while (height > m_height && !m_backlog.isEmpty()) {
+	m_screen.insert(0, m_backlog.takeLast());
+	m_height++;
+    }
+    for (int y = m_height; y < height; y++) {
+	m_screen += vtLine(m_width, m_def);
+    }
+    m_height = height;
+    m_top = 0;
+    m_bottom = height;
+    resize(m_width * m_font_w, m_height * m_font_h);
+    emit UpdateSize();
 }
 
 void vt220::term_toggle_80_132()
@@ -2132,7 +2176,7 @@ void vt220::term_toggle_80_132()
     FUN("term_toggle_80_132");
     m_deccolm = 80 == m_deccolm ? 132 : 80;
     qDebug("%s: toggle to %d columns", _func, m_deccolm);
-    term_set_columns();
+    term_set_columns(m_deccolm);
 }
 
 void vt220::save()

@@ -6,51 +6,14 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>434</width>
-    <height>179</height>
+    <width>315</width>
+    <height>379</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Dialog</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
-   <item row="2" column="0">
-    <widget class="QLabel" name="lbl_weight">
-     <property name="text">
-      <string>Weight</string>
-     </property>
-    </widget>
-   </item>
-   <item row="3" column="1">
-    <widget class="QTextEdit" name="te_example"/>
-   </item>
-   <item row="5" column="0" colspan="3">
-    <widget class="QDialogButtonBox" name="buttonBox">
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
-     </property>
-     <property name="standardButtons">
-      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
-     </property>
-    </widget>
-   </item>
-   <item row="1" column="1">
-    <widget class="QComboBox" name="cb_size"/>
-   </item>
-   <item row="1" column="0">
-    <widget class="QLabel" name="lbl_size">
-     <property name="text">
-      <string>Point size</string>
-     </property>
-    </widget>
-   </item>
-   <item row="0" column="0">
-    <widget class="QLabel" name="lbl_font">
-     <property name="text">
-      <string>Fixed font</string>
-     </property>
-    </widget>
-   </item>
    <item row="0" column="1">
     <widget class="QFontComboBox" name="fontComboBox">
      <property name="currentText">
@@ -66,8 +29,191 @@
      </property>
     </widget>
    </item>
+   <item row="4" column="1">
+    <widget class="QGroupBox" name="groupBox">
+     <property name="title">
+      <string/>
+     </property>
+     <layout class="QGridLayout" name="gridLayout_2">
+      <item row="4" column="0">
+       <widget class="QCheckBox" name="cb_07">
+        <property name="text">
+         <string>LED5</string>
+        </property>
+       </widget>
+      </item>
+      <item row="5" column="0">
+       <widget class="QCheckBox" name="cb_09">
+        <property name="text">
+         <string>LED7</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="QCheckBox" name="cb_04">
+        <property name="text">
+         <string>LED2</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0">
+       <widget class="QCheckBox" name="cb_03">
+        <property name="text">
+         <string>LED1</string>
+        </property>
+       </widget>
+      </item>
+      <item row="6" column="0">
+       <widget class="QCheckBox" name="cb_11">
+        <property name="text">
+         <string>LED9</string>
+        </property>
+       </widget>
+      </item>
+      <item row="5" column="1">
+       <widget class="QCheckBox" name="cb_10">
+        <property name="text">
+         <string>LED8</string>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="1">
+       <widget class="QCheckBox" name="cb_08">
+        <property name="text">
+         <string>LED6</string>
+        </property>
+       </widget>
+      </item>
+      <item row="7" column="1">
+       <widget class="QCheckBox" name="cb_14">
+        <property name="text">
+         <string>LED12</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="0">
+       <widget class="QCheckBox" name="cb_00">
+        <property name="text">
+         <string>Baud rate</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="0">
+       <widget class="QCheckBox" name="cb_05">
+        <property name="text">
+         <string>LED3</string>
+        </property>
+       </widget>
+      </item>
+      <item row="6" column="1">
+       <widget class="QCheckBox" name="cb_12">
+        <property name="text">
+         <string>LED10</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="1">
+       <widget class="QCheckBox" name="cb_06">
+        <property name="text">
+         <string>LED4</string>
+        </property>
+       </widget>
+      </item>
+      <item row="7" column="0">
+       <widget class="QCheckBox" name="cb_13">
+        <property name="text">
+         <string>LED11</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QCheckBox" name="cb_02">
+        <property name="text">
+         <string>Flow control</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0" colspan="2">
+       <widget class="QCheckBox" name="cb_01">
+        <property name="text">
+         <string>Data, parity, and stop bits</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item row="0" column="0">
+    <widget class="QLabel" name="lbl_font">
+     <property name="text">
+      <string>Fixed font</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+     </property>
+    </widget>
+   </item>
+   <item row="8" column="0" colspan="3">
+    <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="standardButtons">
+      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="0">
+    <widget class="QLabel" name="lbl_size">
+     <property name="text">
+      <string>Point size</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="0">
+    <widget class="QLabel" name="lbl_weight">
+     <property name="text">
+      <string>Weight</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="1">
+    <widget class="QComboBox" name="cb_size"/>
+   </item>
    <item row="2" column="1">
     <widget class="QComboBox" name="cb_weight"/>
+   </item>
+   <item row="3" column="1">
+    <widget class="QTextEdit" name="te_example"/>
+   </item>
+   <item row="4" column="0">
+    <widget class="QLabel" name="label">
+     <property name="text">
+      <string>Enabled statusbar elements</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+     </property>
+     <property name="wordWrap">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="0">
+    <widget class="QLabel" name="label_2">
+     <property name="text">
+      <string>Example</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+     </property>
+    </widget>
    </item>
   </layout>
  </widget>
@@ -75,6 +221,22 @@
   <tabstop>fontComboBox</tabstop>
   <tabstop>cb_size</tabstop>
   <tabstop>cb_weight</tabstop>
+  <tabstop>te_example</tabstop>
+  <tabstop>cb_00</tabstop>
+  <tabstop>cb_02</tabstop>
+  <tabstop>cb_01</tabstop>
+  <tabstop>cb_03</tabstop>
+  <tabstop>cb_04</tabstop>
+  <tabstop>cb_05</tabstop>
+  <tabstop>cb_06</tabstop>
+  <tabstop>cb_07</tabstop>
+  <tabstop>cb_08</tabstop>
+  <tabstop>cb_09</tabstop>
+  <tabstop>cb_10</tabstop>
+  <tabstop>cb_11</tabstop>
+  <tabstop>cb_12</tabstop>
+  <tabstop>cb_13</tabstop>
+  <tabstop>cb_14</tabstop>
  </tabstops>
  <resources/>
  <connections>

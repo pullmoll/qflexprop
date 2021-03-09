@@ -47,17 +47,17 @@
 ''============================[ CON ]============================================================
 CON
 '+-------[ Select for P2-EVAL ]------------------------------------------------+ 
-'  _XTALFREQ     = 20_000_000                                    ' crystal frequency
-'  _XDIV         = 2             '\                              '\ crystal divider                      to give 10.0MHz
-'  _XMUL         = 15            '| 150 MHz                      '| crystal / div * mul                  to give 150MHz
-'  _XDIVP        = 1             '/                              '/ crystal / div * mul /divp            to give 150MHz
-'  _XOSC         = %10                                   '15pF   ' %00=OFF, %01=OSC, %10=15pF, %11=30pF
+  _XTALFREQ     = 20_000_000                                    ' crystal frequency
+  _XDIV         = 1             '\                              '\ crystal divider                      to give 20.0MHz
+  _XMUL         = 9             '| 180 MHz                      '| crystal / div * mul                  to give 180MHz
+  _XDIVP        = 1             '/                              '/ crystal / div * mul /divp            to give 180MHz
+  _XOSC         = %10                                   '15pF   ' %00=OFF, %01=OSC, %10=15pF, %11=30pF
 '+-------[ Select for P2D2 ]---------------------------------------------------+ 
-  _XTALFREQ     = 12_000_000                                    ' crystal frequency
-  _XDIV         = 4             '\                              '\ crystal divider                      to give   3.0MHz
-  _XMUL         = 99            '| 148.5MHz                     '| crystal / div * mul                  to give 297.0MHz
-  _XDIVP        = 2             '/                              '/ crystal / div * mul /divp            to give 148.5MHz
-  _XOSC         = %01                                   'OSC    ' %00=OFF, %01=OSC, %10=15pF, %11=30pF
+'  _XTALFREQ     = 12_000_000                                    ' crystal frequency
+'  _XDIV         = 4             '\                              '\ crystal divider                      to give   3.0MHz
+'  _XMUL         = 99            '| 148.5MHz                     '| crystal / div * mul                  to give 297.0MHz
+'  _XDIVP        = 2             '/                              '/ crystal / div * mul /divp            to give 148.5MHz
+'  _XOSC         = %01                                   'OSC    ' %00=OFF, %01=OSC, %10=15pF, %11=30pF
 '+-----------------------------------------------------------------------------+
   _XSEL         = %11                                   'XI+PLL ' %00=rcfast(20+MHz), %01=rcslow(~20KHz), %10=XI(5ms), %11=XI+PLL(10ms)
   _XPPPP        = ((_XDIVP>>1) + 15) & $F                       ' 1->15, 2->0, 4->1, 6->2...30->14
@@ -68,7 +68,8 @@ CON
   _1us          = _clockfreq/1_000_000                          ' 1us
 '------------------------------------------------------------------------------------------------
 '  _baud         = 115_200
-  _baud         = 230_400
+'  _baud         = 230_400
+  _baud         = 921_600
   _bitper       = (_clockfreq / _baud) << 16 + 7          ' 115200 baud, 8 bits
   _txmode       = %0000_0000_000_0000000000000_01_11110_0 'async tx mode, output enabled for smart output
   _rxmode       = %0000_0000_000_0000000000000_00_11111_0 'async rx mode, input  enabled for smart input

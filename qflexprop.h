@@ -92,6 +92,7 @@ private slots:
 
     void on_action_Show_listing_triggered();
     void on_action_Show_binary_triggered();
+    void on_action_Toggle_80_132_mode_triggered();
 
     void on_action_Verbose_upload_triggered();
     void on_action_Switch_to_term_triggered();
@@ -113,7 +114,7 @@ private:
     QIODevice* m_dev;				//!< serial port (or tty)
     QFont m_fixedfont;
     QStringList m_leds;				//!< list of LED names
-    QHash<QString,bool> m_enabled_leds;		//!< hash of LED enabled (visible) status
+    QHash<QString,bool> m_enabled_elements;	//!< list of element enabled (visible) status
     QHash<QString,QLabel*> m_labels;		//!< labels for LEDs
     QString m_stty_operation;			//!< serial port most recent operation
     QString m_port_name;			//!< serial port device name

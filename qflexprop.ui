@@ -96,6 +96,8 @@
     </property>
     <addaction name="action_Show_listing"/>
     <addaction name="action_Show_binary"/>
+    <addaction name="separator"/>
+    <addaction name="action_Toggle_80_132_mode"/>
    </widget>
    <widget class="QMenu" name="menu_Compile">
     <property name="title">
@@ -399,6 +401,15 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+L</string>
+   </property>
+  </action>
+  <action name="action_Toggle_80_132_mode">
+   <property name="icon">
+    <iconset resource="qflexprop.qrc">
+     <normaloff>:/images/toggle_80_132.png</normaloff>:/images/toggle_80_132.png</iconset>
+   </property>
+   <property name="text">
+    <string>Toggle 80/132 mode</string>
    </property>
   </action>
  </widget>

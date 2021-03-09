@@ -23,6 +23,7 @@ const QLatin1String id_fixedfont_weight("fixedfont_weight");
 const QLatin1String id_fixedfont_size("fixedfont_size");
 
 const QLatin1String id_grp_preferences("preferences");
+const QLatin1String id_grp_serialport("serialport");
 #if defined(Q_OS_LINUX)
 const QLatin1String id_default_com("ttyUSB0");
 #elif defined(Q_OS_WIN)
@@ -30,6 +31,7 @@ const QLatin1String id_default_com("COM3");
 #elif defined(Q_OS_MACOS)
 const QLatin1String id_default_com("cu.usb0");
 #endif
+
 const QLatin1String id_default("default");
 const QLatin1String id_name("name");
 const QLatin1String id_baud_rate("baud_rate");
@@ -38,6 +40,7 @@ const QLatin1String id_parity("parity");
 const QLatin1String id_stop_bits("stop_bits");
 const QLatin1String id_flow_control("flow_control");
 const QLatin1String id_local_echo("local_echo");
+const QLatin1String id_parity_data_stop("data_parity_stop");
 
 const QLatin1String id_port_name("port_name");
 const QLatin1String id_description("description");
@@ -47,8 +50,7 @@ const QLatin1String id_location("location");
 const QLatin1String id_product_id("product_id");
 const QLatin1String id_vendor_id("vendor_id");
 
-const QLatin1String id_grp_serialport("serialport");
-const QLatin1String id_parity_data_stop("data_parity_stop");
+const QLatin1String id_grp_enabled("enabled");
 const QLatin1String id_status("status");
 
 const QLatin1String id_terminal("terminal");

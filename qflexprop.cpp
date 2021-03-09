@@ -45,8 +45,24 @@ QFlexProp::QFlexProp(QWidget *parent)
     , ui(new Ui::QFlexProp)
     , m_dev(nullptr)
     , m_fixedfont()
-    , m_leds({id_pwr, id_ri, id_dcd, id_dtr, id_dsr, id_rts, id_cts, id_txd, id_rxd, id_brk, id_fe, id_pe,})
-    , m_enabled_leds({
+    , m_leds({
+	id_pwr,
+	id_ri,
+	id_dcd,
+	id_dtr,
+	id_dsr,
+	id_rts,
+	id_cts,
+	id_txd,
+	id_rxd,
+	id_brk,
+	id_fe,
+	id_pe,
+    })
+    , m_enabled_elements({
+	{id_baud_rate, true},
+	{id_parity_data_stop, true},
+	{id_flow_control, true},
 	{id_pwr, true  },
 	{id_dtr, true  },
 	{id_dsr, true  },
@@ -395,6 +411,15 @@ void QFlexProp::load_settings()
     m_flow_control = static_cast<QSerialPort::FlowControl>(s.value(id_flow_control, m_flow_control).toInt());
     m_local_echo = s.value(id_local_echo, false).toBool();
     s.endGroup();
+
+    s.beginGroup(id_grp_enabled);
+    foreach(const QString& id, m_enabled_elements.keys()) {
+	QString key = id;
+	key.remove(QLatin1String("id_"));
+	bool on = m_enabled_elements.value(id);
+	m_enabled_elements.insert(id, s.value(key, on).toBool());
+    }
+    s.endGroup();
     s.endGroup();
 
     s.beginGroup(id_grp_flexspin);
@@ -452,6 +477,13 @@ void QFlexProp::save_settings()
     s.setValue(id_stop_bits, m_stop_bits);
     s.setValue(id_flow_control, m_flow_control);
     s.setValue(id_local_echo, m_local_echo);
+    s.endGroup();
+    s.beginGroup(id_grp_enabled);
+    foreach(const QString& id, m_enabled_elements.keys()) {
+	QString key = id;
+	key.remove(QLatin1String("id_"));
+	s.setValue(key, m_enabled_elements.value(id));
+    }
     s.endGroup();
     s.endGroup();
 
@@ -896,18 +928,18 @@ void QFlexProp::setup_port()
 	foreach(const QString& key, m_leds) {
 	    m_labels[key]->setVisible(false);
 	}
-	m_labels[id_pwr]->setVisible(m_enabled_leds.value(id_pwr, false));
-	m_labels[id_rxd]->setVisible(m_enabled_leds.value(id_rxd, false));
-	m_labels[id_txd]->setVisible(m_enabled_leds.value(id_txd, false));
+	m_labels[id_pwr]->setVisible(m_enabled_elements.value(id_pwr, false));
+	m_labels[id_rxd]->setVisible(m_enabled_elements.value(id_rxd, false));
+	m_labels[id_txd]->setVisible(m_enabled_elements.value(id_txd, false));
     } else {
 	m_dev = new QSerialPort(si);
 	QSerialPort* stty = qobject_cast<QSerialPort*>(m_dev);
 	if (stty) {
-	    m_labels[id_baud_rate]->setVisible(true);
-	    m_labels[id_parity_data_stop]->setVisible(true);
-	    m_labels[id_flow_control]->setVisible(true);
+	    m_labels[id_baud_rate]->setVisible(m_enabled_elements.value(id_baud_rate, false));
+	    m_labels[id_parity_data_stop]->setVisible(m_enabled_elements.value(id_parity_data_stop, false));
+	    m_labels[id_flow_control]->setVisible(m_enabled_elements.value(id_flow_control, false));
 	    foreach(const QString& key, m_leds) {
-		m_labels[key]->setVisible(m_enabled_leds.value(key, false));
+		m_labels[key]->setVisible(m_enabled_elements.value(key, false));
 	    }
 
 	    ok = connect(stty, &QSerialPort::baudRateChanged,
@@ -1386,9 +1418,13 @@ void QFlexProp::on_action_Settings_triggered()
 {
     SettingsDlg dlg(this);
     dlg.set_font(m_fixedfont);
+    dlg.set_elements(m_enabled_elements);
     if (QDialog::Accepted != dlg.exec())
 	return;
     m_fixedfont = dlg.font();
+    m_enabled_elements = dlg.elements();
+    // Setup the port again to update the displayed elements
+    setup_port();
     // Update any open PropEdit's fonts
     for(int i = 0; i < ui->tabWidget->count(); i++) {
 	PropEdit* pe = ui->tabWidget->findChild<PropEdit*>(id_propedit);
@@ -1430,13 +1466,6 @@ void QFlexProp::on_action_Configure_serialport_triggered()
     m_stop_bits = settings.stop_bits;
     m_flow_control = settings.flow_control;
     m_local_echo = settings.local_echo;
-    qDebug("%s: port name    : %s", __func__, qPrintable(m_port_name));
-    qDebug("%s: baud rate    : %d", __func__, m_baud_rate);
-    qDebug("%s: parity       : %s", __func__, qPrintable(parity_str.value(m_parity)));
-    qDebug("%s: data bits    : %s", __func__, qPrintable(data_bits_str.value(m_data_bits)));
-    qDebug("%s: stop bits    : %s", __func__, qPrintable(stop_bits_str.value(m_stop_bits)));
-    qDebug("%s: flow control : %s", __func__, qPrintable(flow_control_str.value(m_flow_control)));
-    qDebug("%s: local echo   : %s", __func__, m_local_echo ? "on" : "off");
     if (was_open) {
 	configure_port();
     } else {
@@ -1518,6 +1547,14 @@ void QFlexProp::on_action_Show_binary_triggered()
     QString dump = util.dump(QString(), data);
     dlg.set_text(dump);
     dlg.exec();
+}
+
+/**
+ * @brief Toggle terminal between 80 and 132 column mode
+ */
+void QFlexProp::on_action_Toggle_80_132_mode_triggered()
+{
+    ui->terminal->term_toggle_80_132();
 }
 
 /**
@@ -1746,6 +1783,9 @@ void QFlexProp::on_action_Run_triggered()
     PropLoad propload(m_dev, this);
     // propload.set_mode(PropLoad::Prop_Txt);
     propload.set_verbose(m_compile_verbose_upload);
+    propload.set_clock_freq(180000000);
+    propload.set_clock_mode(0);
+    propload.set_user_baud(m_baud_rate);
     // phex.set_use_checksum(false);
     propload.setProperty(id_process_tb, QVariant::fromValue(tb));
     connect(&propload, &PropLoad::Error,

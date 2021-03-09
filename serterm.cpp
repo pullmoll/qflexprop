@@ -200,6 +200,12 @@ void SerTerm::setup_terminal()
     Q_ASSERT(ok);
     ui->toolbar->addAction(act_sendfile);
 
+    QAction* act_toggle_80_132 = new QAction(QIcon(":/images/toggle_80_132.png"), tr("Toggle 80/132 column mode"));
+    ok = connect(act_toggle_80_132, &QAction::triggered,
+	    this, &SerTerm::term_toggle_80_132);
+    Q_ASSERT(ok);
+    ui->toolbar->addAction(act_toggle_80_132);
+
     ui->vterm->set_font_family(m_font_family);
     ui->vterm->set_zoom(m_zoom);
 }
