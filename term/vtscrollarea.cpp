@@ -66,14 +66,10 @@ bool vtScrollArea::event(QEvent *e)
 
 void vtScrollArea::UpdateCursor(const QRect& rect)
 {
-    QEventLoop loop(this);
     ensureVisible(rect.x(), rect.y());
-    loop.processEvents();
 }
 
 void vtScrollArea::UpdateSize()
 {
-    QEventLoop loop(this);
     updateGeometry();
-    loop.processEvents();
 }

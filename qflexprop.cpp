@@ -1660,12 +1660,19 @@ bool QFlexProp::flexspin(QByteArray* p_binary, QString* p_p2asm, QString* p_lst)
 	       .arg(args.join(QStringLiteral(" \\\n\t"))));
 
     QProcess process(this);
+    process.setProgram(m_flexspin_executable);
+#if defined(Q_OS_WIN)
+    // Windows really sucks: not even argument passing to a process works as elsewhere
+    process.setNativeArguments(args.join(QChar::Space));
+#else
+    process.setArguments(args);
+#endif
     process.setProperty(id_process_tb, QVariant::fromValue(tb));
     connect(&process, &QProcess::channelReadyRead,
 	    this, &QFlexProp::channelReadyRead);
 
     // run the command
-    process.start(m_flexspin_executable, args);
+    process.start();
     if (QProcess::Starting == process.state()) {
 	if (!process.waitForStarted()) {
 	    qCritical("%s: result code %d", __func__, process.exitCode());
