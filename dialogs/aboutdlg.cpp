@@ -13,6 +13,7 @@ AboutDlg::AboutDlg(QWidget *parent) :
 				      .arg(qApp->applicationDisplayName()));
     ui->lbl_application_version->setText(QString("### %1")
 				      .arg(qApp->applicationVersion()));
+    adjustSize();
 }
 
 AboutDlg::~AboutDlg()
