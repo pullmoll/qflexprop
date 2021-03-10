@@ -14,6 +14,7 @@
 
 const QLatin1String id_sourcedir("sourcedir");
 const QLatin1String id_filename("filename");
+const QLatin1String id_pathname("pathname");
 const QLatin1String id_history("history");
 
 const QLatin1String id_grp_application("application");

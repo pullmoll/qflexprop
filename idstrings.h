@@ -21,6 +21,7 @@
 
 extern const QLatin1String id_sourcedir;
 extern const QLatin1String id_filename;
+extern const QLatin1String id_pathname;
 extern const QLatin1String id_history;
 
 extern const QLatin1String id_grp_application;

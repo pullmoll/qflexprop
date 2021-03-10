@@ -9,6 +9,7 @@
  ***************************************************************************************/
 #include <QSettings>
 #include <QFileInfo>
+#include <QFileDialog>
 #include <QProcess>
 #include <QListWidget>
 #include "idstrings.h"
@@ -99,10 +100,66 @@ void FlexspinDlg::le_flexspin_changed(const QString& executable)
 	ui->le_flexspin->setStyleSheet(QString());
 	setup_dialog();
     } else if (info.exists()) {
-	ui->le_flexspin->setStyleSheet(QLatin1String("color: darkgreen;"));
+        ui->le_flexspin->setStyleSheet(QLatin1String("color: darkgreen;"));
     } else {
 	ui->le_flexspin->setStyleSheet(QLatin1String("color: red;"));
     }
+}
+
+void FlexspinDlg::add_include_path_triggered(bool checked)
+{
+    Q_UNUSED(checked)
+    QFileDialog dlg(this);
+    QSettings s;
+    s.beginGroup(id_grp_flexspin);
+    QString srcdflt = QString("%1/p2tools").arg(QDir::homePath());
+    QString srcdir = s.value(id_sourcedir, srcdflt).toString();
+    QString pathname = s.value(id_pathname).toString();
+    QStringList history = s.value(id_history).toStringList();
+    s.endGroup();
+
+    dlg.setWindowTitle(tr("Select directory to add"));
+    dlg.setAcceptMode(QFileDialog::AcceptOpen);
+    dlg.setDirectory(srcdir);
+    dlg.setFileMode(QFileDialog::DirectoryOnly);
+    dlg.setHistory(history);
+    dlg.setOption(QFileDialog::DontUseNativeDialog, true);
+    dlg.setViewMode(QFileDialog::List);
+    dlg.selectFile(pathname);
+
+    if (QFileDialog::Accepted != dlg.exec())
+        return;
+
+    QStringList paths = dlg.selectedFiles();
+    if (paths.isEmpty())
+        return;
+
+    pathname = paths.first();
+    QFileInfo info(pathname);
+    if (!info.exists())
+        return;
+    if (!info.isDir())
+        return;
+    if (!ui->lw_include_paths->findItems(info.absoluteFilePath(), Qt::MatchCaseSensitive).isEmpty())
+        return;
+
+    s.beginGroup(id_grp_flexspin);
+    s.setValue(id_sourcedir, info.absoluteDir().path());
+    s.setValue(id_pathname, info.fileName());
+    history.insert(0, info.absoluteFilePath());
+    s.setValue(id_history, history);
+    s.endGroup();
+    ui->lw_include_paths->addItem(info.absoluteFilePath());
+}
+
+void FlexspinDlg::del_include_path_triggered(bool checked)
+{
+    Q_UNUSED(checked)
+    const int idx = ui->lw_include_paths->currentRow();
+    if (idx < 0)
+        return;
+    QListWidgetItem* it = ui->lw_include_paths->takeItem(idx);
+    delete it;
 }
 
 /**
@@ -129,10 +186,20 @@ void FlexspinDlg::le_hubaddress_changed(const QString& address)
  */
 void FlexspinDlg::setup_connections()
 {
-    connect(ui->le_flexspin, SIGNAL(textChanged(QString)),
-	    this, SLOT(le_flexspin_changed(QString)));
-    connect(ui->le_hubaddress, SIGNAL(textChanged(QString)),
-	    this, SLOT(le_hubaddress_changed(QString)));
+    bool ok;
+    ok = connect(ui->le_flexspin, &QLineEdit::textChanged,
+            this, &FlexspinDlg::le_flexspin_changed);
+    Q_ASSERT(ok);
+    ok = connect(ui->le_hubaddress, &QLineEdit::textChanged,
+            this, &FlexspinDlg::le_hubaddress_changed);
+    Q_ASSERT(ok);
+
+    ok = connect(ui->tb_add, &QToolButton::clicked,
+            this, &FlexspinDlg::add_include_path_triggered);
+    Q_ASSERT(ok);
+    ok = connect(ui->tb_del, &QToolButton::clicked,
+            this, &FlexspinDlg::del_include_path_triggered);
+    Q_ASSERT(ok);
 }
 
 /**

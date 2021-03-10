@@ -9,6 +9,7 @@
  ***************************************************************************************/
 #pragma once
 #include <QDialog>
+#include <QAction>
 
 namespace Ui {
 class FlexspinDlg;
@@ -41,6 +42,9 @@ private slots:
     void setup_dialog();
     void le_hubaddress_changed(const QString& address);
     void le_flexspin_changed(const QString& executable);
+
+    void add_include_path_triggered(bool checked);
+    void del_include_path_triggered(bool checked);
 
 private:
     Ui::FlexspinDlg *ui;
