@@ -385,7 +385,8 @@ void QFlexProp::load_settings()
     bool ok;
 
     s.beginGroup(id_grp_application);
-    restoreGeometry(s.value(id_window_geometry).toByteArray());
+    QByteArray geometry = s.value(id_window_geometry).toByteArray();
+    restoreGeometry(geometry);
     // TODO: sane defaults?
 #if defined(Q_OS_LINUX)
     QString font_default = QLatin1String("Monospace");
@@ -447,6 +448,11 @@ void QFlexProp::load_settings()
 
     ui->action_Verbose_upload->setChecked(m_compile_verbose_upload);
     ui->action_Switch_to_term->setChecked(m_compile_switch_to_term);
+
+    if (geometry.isEmpty()) {
+        // First run: adjust the size of the main window
+        adjustSize();
+    }
 }
 
 /**
@@ -1146,10 +1152,7 @@ int QFlexProp::insert_tab(const QString& filename)
     spl->setStretchFactor(1, 1);
 
     QFileInfo info(filename);
-    QString title = QString("%1 [%2]")
-		    .arg(info.fileName())
-		    .arg(pe->filetype_name());
-    ui->tabWidget->insertTab(tabidx, tab, title);
+    ui->tabWidget->insertTab(tabidx, tab, QString());
     ui->tabWidget->setCurrentIndex(tabidx);
 
     if (info.exists()) {
@@ -1163,6 +1166,10 @@ int QFlexProp::insert_tab(const QString& filename)
 			.arg(info.fileName()));
 	}
     }
+    QString title = QString("%1 [%2]")
+                    .arg(info.fileName())
+                    .arg(pe->filetype_name());
+    ui->tabWidget->setTabText(tabidx, title);
 
     return tabidx;
 }
