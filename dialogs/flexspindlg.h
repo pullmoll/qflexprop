@@ -22,7 +22,7 @@ class FlexspinDlg : public QDialog
 public:
     struct Settings {
 	QString executable;
-	QStringList include_paths;
+        QStringList include_paths;
 	bool quiet;
 	int optimize;
 	bool listing;
@@ -42,7 +42,7 @@ private slots:
     void setup_dialog();
     void le_hubaddress_changed(const QString& address);
     void le_flexspin_changed(const QString& executable);
-
+    void include_path_changed(int index = -1);
     void add_include_path_triggered(bool checked);
     void del_include_path_triggered(bool checked);
 

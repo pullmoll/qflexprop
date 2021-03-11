@@ -1,5 +1,5 @@
 QT      += core gui widgets serialport
-CONFIG  += c++11
+CONFIG  += c++14
 VERSION_MAJOR = 0
 VERSION_MINOR = 2
 VERSION_PATCH = 0

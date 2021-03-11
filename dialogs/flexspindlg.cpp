@@ -50,7 +50,7 @@ FlexspinDlg::Settings FlexspinDlg::settings() const
     bool ok;
     s.executable = ui->le_flexspin->text();
     s.quiet = ui->cb_quiet->isChecked();
-    s.optimize = ui->le_optimize->text().toInt(&ok);
+    s.optimize = ui->cb_optimize->currentData().toInt(&ok);
     if (!ok)
 	s.optimize = 0;
     s.include_paths.clear();
@@ -75,11 +75,16 @@ FlexspinDlg::Settings FlexspinDlg::settings() const
 void FlexspinDlg::set_settings(const FlexspinDlg::Settings& s)
 {
     ui->le_flexspin->setText(s.executable);
-    ui->le_optimize->setText(QString::number(s.optimize));
+    const int idx = ui->cb_optimize->findData(s.optimize);
+    ui->cb_optimize->setCurrentIndex(idx);
     ui->cb_quiet->setChecked(s.quiet);
     ui->lw_include_paths->clear();
     foreach(const QString& path, s.include_paths)
 	ui->lw_include_paths->addItem(path);
+    if (s.include_paths.count() > 0)
+        ui->lw_include_paths->setCurrentRow(0);
+    else
+        ui->tb_del->setEnabled(false);
     ui->cb_listing->setChecked(s.listing);
     ui->cb_warnings->setChecked(s.warnings);
     ui->cb_errors->setChecked(s.errors);
@@ -106,6 +111,21 @@ void FlexspinDlg::le_flexspin_changed(const QString& executable)
     }
 }
 
+void FlexspinDlg::include_path_changed(int index)
+{
+    Q_UNUSED(index)
+    ui->tb_del->setEnabled(ui->lw_include_paths->count() > 0 &&
+                           ui->lw_include_paths->currentRow() >= 0);
+}
+
+/**
+ * @brief Slot is called when an include path is added
+ *
+ * Present a file dialog where the user can select a
+ * directory to add to the list of include paths.
+ *
+ * @param checked unused
+ */
 void FlexspinDlg::add_include_path_triggered(bool checked)
 {
     Q_UNUSED(checked)
@@ -150,8 +170,13 @@ void FlexspinDlg::add_include_path_triggered(bool checked)
     s.setValue(id_history, history);
     s.endGroup();
     ui->lw_include_paths->addItem(info.absoluteFilePath());
+    include_path_changed();
 }
 
+/**
+ * @brief Slot is called when the current include path is to be removed
+ * @param checked unused
+ */
 void FlexspinDlg::del_include_path_triggered(bool checked)
 {
     Q_UNUSED(checked)
@@ -160,6 +185,7 @@ void FlexspinDlg::del_include_path_triggered(bool checked)
         return;
     QListWidgetItem* it = ui->lw_include_paths->takeItem(idx);
     delete it;
+    include_path_changed();
 }
 
 /**
@@ -200,6 +226,9 @@ void FlexspinDlg::setup_connections()
     ok = connect(ui->tb_del, &QToolButton::clicked,
             this, &FlexspinDlg::del_include_path_triggered);
     Q_ASSERT(ok);
+
+    ok = connect(ui->cb_optimize, qOverload<int>(&QComboBox::currentIndexChanged),
+                 this, &FlexspinDlg::include_path_changed);
 }
 
 /**
@@ -210,6 +239,12 @@ void FlexspinDlg::setup_connections()
 void FlexspinDlg::setup_dialog()
 {
     static const QStringList args = {{"--version"}};
+
+    ui->cb_optimize->clear();
+    ui->cb_optimize->addItem(tr("None"), 0);
+    ui->cb_optimize->addItem(tr("Basic"), 1);
+    ui->cb_optimize->addItem(tr("Masximum"), 2);
+
     ui->le_version_info->setToolTip(QString());
     QString flexspin = ui->le_flexspin->text();
     QFileInfo info(flexspin);

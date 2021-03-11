@@ -130,21 +130,6 @@
      </property>
     </widget>
    </item>
-   <item row="6" column="1" colspan="2">
-    <widget class="QLineEdit" name="le_optimize">
-     <property name="font">
-      <font>
-       <family>Monospace</family>
-       <pointsize>10</pointsize>
-       <weight>75</weight>
-       <bold>true</bold>
-      </font>
-     </property>
-     <property name="toolTip">
-      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:400;&quot;&gt;0: no optimization&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:400;&quot;&gt;1: basic optimization&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:400;&quot;&gt;2: all optimization&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-     </property>
-    </widget>
-   </item>
    <item row="8" column="1" colspan="2">
     <widget class="QCheckBox" name="cb_warnings">
      <property name="text">
@@ -264,6 +249,9 @@
      </property>
     </widget>
    </item>
+   <item row="6" column="1">
+    <widget class="QComboBox" name="cb_optimize"/>
+   </item>
   </layout>
  </widget>
  <tabstops>
@@ -272,7 +260,6 @@
   <tabstop>lw_include_paths</tabstop>
   <tabstop>tb_add</tabstop>
   <tabstop>cb_quiet</tabstop>
-  <tabstop>le_optimize</tabstop>
   <tabstop>cb_listing</tabstop>
   <tabstop>cb_warnings</tabstop>
   <tabstop>cb_errors</tabstop>
